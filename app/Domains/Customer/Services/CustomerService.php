@@ -2,51 +2,38 @@
 
 namespace App\Domains\Customer\Services;
 
-use App\Domains\Common\Services\BaseService;
-use App\Domains\Customer\Models\Customer;
-use App\Domains\Customer\Repositories\CustomerRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Models\Company;
+use App\Models\Customer;
+use App\Models\User;
 
-class CustomerService extends BaseService
+class CustomerService
 {
-    public function __construct(protected CustomerRepository $customers)
+    public function listForCompany(Company $company): mixed
     {
+        return $company->customers()
+            ->latest()
+            ->paginate(20);
     }
 
-    public function paginate(?string $search = null): LengthAwarePaginator
+    public function create(Company $company, array $data): Customer
     {
-        return $this->customers->list($search);
-    }
+        if (! empty($data['user_id'])) {
+            $user = User::where('uuid', $data['user_id'])->first();
+            $data['user_id'] = $user?->id;
+        }
 
-    public function create(array $data): Customer
-    {
-        return $this->customers->create($this->prepare($data));
+        return $company->customers()->create($data);
     }
 
     public function update(Customer $customer, array $data): Customer
     {
-        // due_balance is managed via due payments, never edited directly here.
-        $payload = $this->prepare($data);
-        unset($payload['due_balance']);
+        $customer->update($data);
 
-        return $this->customers->update($customer, $payload);
+        return $customer->fresh();
     }
 
-    public function delete(Customer $customer): bool
+    public function delete(Customer $customer): void
     {
-        return $this->customers->delete($customer);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    protected function prepare(array $data): array
-    {
-        return [
-            'name'        => $data['name'],
-            'phone'       => $data['phone'] ?? null,
-            'address'     => $data['address'] ?? null,
-            'due_balance' => $data['due_balance'] ?? 0,
-        ];
+        $customer->delete();
     }
 }

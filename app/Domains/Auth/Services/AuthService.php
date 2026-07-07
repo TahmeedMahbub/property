@@ -3,48 +3,67 @@
 namespace App\Domains\Auth\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Support\Facades\Hash;
 
-/**
- * Thin wrapper around Laravel authentication for the SME login flow.
- * Users sign in with their mobile number + password.
- */
 class AuthService
 {
-    /**
-     * Determine whether an account exists for the given phone number.
-     */
-    public function phoneExists(string $phone): bool
+    public function register(array $data): array
     {
-        return User::where('phone', $phone)->exists();
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'] ?? null,
+            'password' => $data['password'],
+        ]);
+
+        $token = $user->createToken('auth')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+        ];
     }
 
-    /**
-     * Attempt to authenticate a user by phone or email + password.
-     */
-    public function attempt(string $identifier, string $password, bool $remember = false): bool
+    public function login(array $credentials): array
     {
-        $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
+        $user = User::where('email', $credentials['email'])->first();
 
-        return Auth::attempt(
-            [$field => $identifier, 'password' => $password, 'status' => 'active'],
-            $remember
-        );
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            throw new AuthenticationException('Invalid credentials.');
+        }
+
+        if ($user->status !== 'active') {
+            throw new AuthenticationException('Account is not active.');
+        }
+
+        $user->update(['last_login_at' => now()]);
+
+        $token = $user->createToken('auth')->plainTextToken;
+
+        return [
+            'user' => $user,
+            'token' => $token,
+            'companies' => $user->activeMemberships()
+                ->with('company:id,uuid,name,logo')
+                ->get(['id', 'company_id', 'role_id', 'is_owner', 'status']),
+        ];
     }
 
-    /**
-     * Log the given user in (used right after registration).
-     */
-    public function login(\App\Models\User $user): void
+    public function logout(User $user): void
     {
-        Auth::login($user);
+        if ($token = $user->currentAccessToken()) {
+            $token->delete();
+        }
     }
 
-    /**
-     * Log the current user out.
-     */
-    public function logout(): void
+    public function profile(User $user): array
     {
-        Auth::logout();
+        return [
+            'user' => $user,
+            'companies' => $user->activeMemberships()
+                ->with(['company:id,uuid,name,logo', 'role:id,name,slug'])
+                ->get(),
+        ];
     }
 }

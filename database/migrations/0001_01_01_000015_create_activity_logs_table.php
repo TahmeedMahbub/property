@@ -22,7 +22,6 @@ return new class extends Migration
 
             $table->index(['company_id', 'created_at']);
             $table->index(['user_id', 'created_at']);
-            $table->index(['subject_type', 'subject_id']);
         });
     }
 

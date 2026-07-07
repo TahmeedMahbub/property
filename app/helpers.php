@@ -1,15 +1,32 @@
 <?php
 
-use App\Domains\Common\Services\TranslationService;
+// Global helper functions
 
 if (! function_exists('t')) {
     /**
-     * Translate a key into the current user's language.
+     * Retrieve a translated string from config/translations.php.
      *
-     * Returns the key itself when it has no translation entry.
+     * Usage: t('brand.name') → returns the value for the current locale ('bn' or 'en').
+     * Falls back to 'en', then returns the key itself if not found.
      */
-    function t(string $key): string
+    function t(string $key, string $locale = null): string
     {
-        return app(TranslationService::class)->get($key);
+        $locale = $locale ?? app()->getLocale();
+
+        $segments = explode('.', $key);
+        $value = config('translations');
+
+        foreach ($segments as $segment) {
+            if (! is_array($value) || ! array_key_exists($segment, $value)) {
+                return $key;
+            }
+            $value = $value[$segment];
+        }
+
+        if (is_array($value)) {
+            return $value[$locale] ?? $value['en'] ?? $value['bn'] ?? $key;
+        }
+
+        return (string) $value;
     }
 }

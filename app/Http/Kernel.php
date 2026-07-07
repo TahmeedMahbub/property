@@ -36,7 +36,6 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\SetLocale::class,
         ],
 
         'api' => [
@@ -65,7 +64,9 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'verified.owner' => \App\Http\Middleware\EnsureOwnerEmailIsVerified::class,
-        'tenant' => \App\Http\Middleware\TenantMiddleware::class,
+        'company' => \App\Http\Middleware\ResolveCompanyContext::class,
+        'company.required' => \App\Http\Middleware\EnsureCompanyContext::class,
+        'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        'web.company' => \App\Http\Middleware\ResolveWebCompanyContext::class,
     ];
 }

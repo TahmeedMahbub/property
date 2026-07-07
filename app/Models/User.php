@@ -2,110 +2,144 @@
 
 namespace App\Models;
 
-use App\Domains\Auth\Notifications\EmailVerificationCodeNotification;
-use App\Domains\Common\Traits\HasPublicId;
-use App\Domains\Tenant\Models\Branch;
-use App\Domains\Tenant\Models\Tenant;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, HasPublicId, Notifiable;
+    use HasApiTokens, HasFactory, HasUuid, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'tenant_id',
-        'branch_id',
         'name',
-        'phone',
         'email',
+        'phone',
         'password',
-        'role',
+        'avatar',
+        'is_super_admin',
         'status',
-        'language',
-        'email_verification_code',
-        'email_verification_code_expires_at',
-        'email_verification_attempts',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
+        'id',
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'email_verification_code_expires_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    public function tenant(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(Tenant::class);
+        return [
+            'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'is_super_admin' => 'boolean',
+            'password' => 'hashed',
+        ];
     }
 
-    public function branch(): BelongsTo
+    // ─── Relationships ───────────────────────────────────────────
+
+    public function memberships(): HasMany
     {
-        return $this->belongsTo(Branch::class);
+        return $this->hasMany(CompanyMembership::class);
     }
 
-    public function isOwner(): bool
+    public function companies()
     {
-        return $this->role === 'owner';
+        return $this->belongsToMany(Company::class, 'company_memberships')
+            ->withPivot(['role_id', 'title', 'department', 'is_owner', 'status', 'joined_at'])
+            ->withTimestamps();
     }
 
-    /**
-     * Generate a fresh 4-digit code and email it to the user.
-     *
-     * Overrides the default link-based verification so both registration and
-     * "resend" flows deliver a 4-digit code instead.
-     */
-    public function sendEmailVerificationNotification(): void
+    public function shareholders(): HasMany
     {
-        $code = str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
-
-        $this->forceFill([
-            'email_verification_code' => $code,
-            'email_verification_code_expires_at' => Carbon::now()->addMinutes(15),
-            'email_verification_attempts' => 0,
-        ])->save();
-
-        $this->notify(new EmailVerificationCodeNotification($code));
+        return $this->hasMany(Shareholder::class);
     }
 
-    /**
-     * Check whether the given code matches and has not expired.
-     */
-    public function isValidVerificationCode(string $code): bool
+    public function investments(): HasMany
     {
-        if (empty($this->email_verification_code) || $this->email_verification_code_expires_at === null) {
+        return $this->hasMany(ProjectInvestor::class);
+    }
+
+    public function employees(): HasMany
+    {
+        return $this->hasMany(Employee::class);
+    }
+
+    public function customerProfiles(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    // ─── Scopes ──────────────────────────────────────────────────
+
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopeSuperAdmins($query)
+    {
+        return $query->where('is_super_admin', true);
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->is_super_admin;
+    }
+
+    public function isOwnerOf(Company $company): bool
+    {
+        return $this->memberships()
+            ->where('company_id', $company->id)
+            ->where('is_owner', true)
+            ->exists();
+    }
+
+    public function activeMemberships()
+    {
+        return $this->memberships()->where('status', 'active');
+    }
+
+    public function membershipFor(Company $company): ?CompanyMembership
+    {
+        return $this->memberships()
+            ->where('company_id', $company->id)
+            ->where('status', 'active')
+            ->first();
+    }
+
+    public function hasPermissionIn(Company $company, string $permissionSlug): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($this->isOwnerOf($company)) {
+            return true;
+        }
+
+        $membership = app()->bound('currentMembership')
+            ? app('currentMembership')
+            : $this->membershipFor($company);
+
+        if (! $membership || ! $membership->role) {
             return false;
         }
 
-        if ($this->email_verification_code_expires_at->isPast()) {
-            return false;
-        }
+        return $membership->role->permissions()
+            ->where('slug', $permissionSlug)
+            ->exists();
+    }
 
-        return hash_equals($this->email_verification_code, $code);
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

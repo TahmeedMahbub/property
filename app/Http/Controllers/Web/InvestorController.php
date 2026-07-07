@@ -1,0 +1,118 @@
+<?php
+
+namespace App\Http\Controllers\Web;
+
+use App\Http\Controllers\Controller;
+use App\Models\Project;
+use App\Models\ProjectInvestor;
+use Illuminate\Http\Request;
+
+class InvestorController extends Controller
+{
+    public function index(Request $request)
+    {
+        $company = app('currentCompany');
+        $projectIds = $company->projects()->pluck('id');
+
+        $query = ProjectInvestor::whereIn('project_id', $projectIds)->with('project');
+
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        if ($projectUuid = $request->input('project')) {
+            $project = $company->projects()->where('uuid', $projectUuid)->first();
+            if ($project) {
+                $query->where('project_id', $project->id);
+            }
+        }
+
+        $investors = $query->latest()->paginate(15)->withQueryString();
+        $projects = $company->projects()->orderBy('name')->get();
+
+        return view('contents.property.investors.index', compact('investors', 'projects'));
+    }
+
+    public function create()
+    {
+        $company = app('currentCompany');
+        $projects = $company->projects()->orderBy('name')->get();
+
+        return view('contents.property.investors.create', compact('projects'));
+    }
+
+    public function store(Request $request)
+    {
+        $company = app('currentCompany');
+
+        $validated = $request->validate([
+            'project_id' => 'required|string',
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'investment_amount' => 'nullable|numeric|min:0',
+            'investment_percentage' => 'nullable|numeric|min:0|max:100',
+            'investment_type' => 'nullable|string|in:equity,debt,mezzanine',
+            'invested_at' => 'nullable|date',
+            'expected_return' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string',
+            'status' => 'required|in:active,inactive,exited',
+        ]);
+
+        $project = $company->projects()->where('uuid', $validated['project_id'])->firstOrFail();
+        $validated['project_id'] = $project->id;
+
+        ProjectInvestor::create($validated);
+
+        return redirect('/investors')->with('success', 'Investor added successfully.');
+    }
+
+    public function edit(string $uuid)
+    {
+        $company = app('currentCompany');
+        $projectIds = $company->projects()->pluck('id');
+        $investor = ProjectInvestor::whereIn('project_id', $projectIds)
+            ->where('uuid', $uuid)->with('project')->firstOrFail();
+
+        $projects = $company->projects()->orderBy('name')->get();
+
+        return view('contents.property.investors.edit', compact('investor', 'projects'));
+    }
+
+    public function update(Request $request, string $uuid)
+    {
+        $company = app('currentCompany');
+        $projectIds = $company->projects()->pluck('id');
+        $investor = ProjectInvestor::whereIn('project_id', $projectIds)
+            ->where('uuid', $uuid)->firstOrFail();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'phone' => 'nullable|string|max:30',
+            'investment_amount' => 'nullable|numeric|min:0',
+            'investment_percentage' => 'nullable|numeric|min:0|max:100',
+            'investment_type' => 'nullable|string|in:equity,debt,mezzanine',
+            'invested_at' => 'nullable|date',
+            'expected_return' => 'nullable|numeric|min:0',
+            'notes' => 'nullable|string',
+            'status' => 'required|in:active,inactive,exited',
+        ]);
+
+        $investor->update($validated);
+
+        return redirect('/investors')->with('success', 'Investor updated successfully.');
+    }
+
+    public function destroy(string $uuid)
+    {
+        $company = app('currentCompany');
+        $projectIds = $company->projects()->pluck('id');
+        $investor = ProjectInvestor::whereIn('project_id', $projectIds)
+            ->where('uuid', $uuid)->firstOrFail();
+
+        $investor->delete();
+
+        return redirect('/investors')->with('success', 'Investor deleted successfully.');
+    }
+}

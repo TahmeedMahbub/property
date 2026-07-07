@@ -30,7 +30,6 @@ return new class extends Migration
 
             $table->index(['company_id', 'category_id']);
             $table->index(['company_id', 'folder_id']);
-            $table->index(['documentable_type', 'documentable_id']);
         });
     }
 
