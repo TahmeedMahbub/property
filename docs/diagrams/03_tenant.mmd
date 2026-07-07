@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant C as Client
+    participant MW as ResolveCompany MW
+    participant TM as TenantManager
+    participant DB as Query Layer
+    C->>MW: Request + Bearer token + X-Company-Id
+    MW->>MW: Authenticate user (global)
+    MW->>MW: Verify user is member of company
+    MW->>TM: setTenant(company_id)
+    TM->>DB: TenantScope injects WHERE tenant_id = ?
+    DB-->>C: Only this company data

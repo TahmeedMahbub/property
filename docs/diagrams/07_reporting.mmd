@@ -1,0 +1,7 @@
+flowchart LR
+    OLTP[(Write tables: payments, installments, ledger)]
+    OLTP -->|domain events| AGG[Rollup jobs]
+    AGG --> SNAP[(Summary tables: daily/monthly per tenant/project)]
+    OLTP -->|replication| RR[(Read replica)]
+    SNAP --> DASH[Dashboards - fast reads]
+    RR --> ADHOC[Ad-hoc and exports]

@@ -1,0 +1,24 @@
+erDiagram
+    USERS ||--o{ COMPANY_MEMBERS : "is member"
+    COMPANIES ||--o{ COMPANY_MEMBERS : "has members"
+    USERS ||--o{ SHAREHOLDERS : "holds shares"
+    COMPANIES ||--o{ SHAREHOLDERS : "owned by"
+    USERS ||--o{ PROJECT_INVESTORS : "invests"
+    USERS ||--o{ BUYERS : "buys as"
+    COMPANIES ||--o{ PROJECTS : has
+    PROJECTS ||--o{ BUILDINGS : has
+    BUILDINGS ||--o{ FLOORS : has
+    FLOORS ||--o{ UNITS : has
+    UNIT_TYPES ||--o{ UNITS : classifies
+    PROJECTS ||--o{ PROJECT_INVESTORS : funded_by
+    PROJECT_INVESTORS ||--o{ PROFIT_DISTRIBUTIONS : receives
+    UNITS ||--o{ BOOKINGS : reserved_in
+    BOOKINGS ||--o{ SALE_AGREEMENTS : becomes
+    SALE_AGREEMENTS ||--|| BUYERS : signed_by
+    SALE_AGREEMENTS ||--|| INSTALLMENT_PLANS : has
+    INSTALLMENT_PLANS ||--o{ INSTALLMENTS : schedules
+    INSTALLMENTS ||--o{ PAYMENTS : paid_by
+    PAYMENTS ||--|| RECEIPTS : generates
+    COMPANIES ||--o{ LEDGER_ENTRIES : records
+    DOCUMENTS }o--|| DOCUMENTABLE : attaches_to
+    ACTIVITY_LOGS }o--|| SUBJECT : audits

@@ -1,0 +1,27 @@
+erDiagram
+    DOCUMENTS ||--o{ DOCUMENT_VERSIONS : versions
+    DOCUMENTS }o--|| DOCUMENTABLE : "polymorphic owner"
+    DOCUMENT_CATEGORIES ||--o{ DOCUMENTS : classifies
+    DOCUMENTS {
+        bigint id
+        char public_id
+        bigint tenant_id
+        string documentable_type
+        bigint documentable_id
+        bigint category_id
+        string title
+        string disk
+        string visibility
+        bigint current_version_id
+    }
+    DOCUMENT_VERSIONS {
+        bigint id
+        bigint document_id
+        int version_no
+        string path
+        string original_name
+        string mime
+        bigint size
+        string checksum
+        bigint uploaded_by
+    }

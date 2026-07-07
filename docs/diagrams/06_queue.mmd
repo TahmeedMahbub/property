@@ -1,0 +1,10 @@
+flowchart LR
+    App -->|dispatch| Q
+    subgraph Q["Queues by SLA"]
+      HI[high: notifications, OTP]
+      DEF[default: domain events, ledger posting]
+      REP[reports: heavy aggregation and exports]
+      FILE[files: virus scan, thumbnails, checksums]
+      LOW[low: cleanup, audit archiving]
+    end
+    Q --> W[Horizon supervisors: per-queue concurrency]

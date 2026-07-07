@@ -1,0 +1,27 @@
+flowchart TB
+    subgraph Platform["Platform (no tenant scope)"]
+        PA[Platform / Super Admin]
+        SUB[Subscriptions and Plans]
+        IDN[Identity and Access - Global Users]
+    end
+    subgraph Tenant["Per-Company (tenant-scoped)"]
+        ORG[Organization: Members / Shareholders / Employees]
+        PRJ[Projects and Inventory: Buildings / Floors / Units]
+        INV[Investment: Investors / Distributions]
+        SAL[Sales: Leads / Bookings / Agreements]
+        FIN[Finance and Collections: Installments / Receipts / Ledger]
+        DOC[Documents and Files]
+        REP[Reporting and Analytics]
+    end
+    subgraph Cross["Cross-cutting"]
+        NOT[Notifications]
+        AUD[Audit / Activity Log]
+        EVT[Domain Events / Queue]
+    end
+    IDN --> ORG
+    SUB --> Tenant
+    ORG --> PRJ --> INV
+    PRJ --> SAL --> FIN
+    Tenant --> EVT --> NOT
+    Tenant --> AUD
+    FIN --> REP

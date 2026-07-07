@@ -1,0 +1,9 @@
+flowchart LR
+    RT[Route] --> MW[Middleware: auth, ResolveCompany, membership]
+    MW --> C[Controller - thin]
+    C --> FR[FormRequest - validation]
+    C --> S[Service / Action - domain logic + transaction]
+    S --> R[Repository - persistence]
+    R --> M[Eloquent Model: BelongsToTenant, HasUlid]
+    S --> E[Domain Event] --> L[Listener/Job - queued side-effects]
+    C --> RES[API Resource - response shape]

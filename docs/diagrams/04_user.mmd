@@ -1,0 +1,8 @@
+flowchart LR
+    U[users: global person, no tenant_id]
+    U --> CM[company_members: tenant_id, user_id, member_type, is_owner]
+    U --> SH[shareholders: tenant_id, user_id, shares, percentage]
+    U --> EMP[employees: tenant_id, user_id, designation, salary]
+    U --> PI[project_investors: tenant_id, project_id, user_id, amount, share]
+    U --> BY[buyers: tenant_id, user_id, kyc, agreement refs]
+    CM --> RA[model_has_roles: per-company RBAC]
