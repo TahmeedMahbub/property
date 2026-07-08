@@ -28,12 +28,19 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Email Verification
+Route::middleware('auth')->group(function () {
+    Route::get('/verify-email', [AuthController::class, 'showVerifyEmail'])->name('verification.notice');
+    Route::post('/verify-email', [AuthController::class, 'verifyCode'])->name('verification.code');
+    Route::post('/verify-email/resend', [AuthController::class, 'resendCode'])->name('verification.send');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Authenticated Routes
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'web.company'])->group(function () {
+Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
