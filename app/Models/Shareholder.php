@@ -6,6 +6,7 @@ use App\Models\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -36,6 +37,8 @@ class Shareholder extends Model
         return [
             'share_percentage' => 'decimal:4',
             'share_amount' => 'decimal:2',
+            'shares_owned' => 'decimal:6',
+            'ownership_percentage' => 'decimal:6',
             'acquired_at' => 'date',
         ];
     }
@@ -55,6 +58,11 @@ class Shareholder extends Model
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
+    }
+
+    public function shareTransactions(): HasMany
+    {
+        return $this->hasMany(ShareTransaction::class);
     }
 
     // ─── Scopes ──────────────────────────────────────────────────

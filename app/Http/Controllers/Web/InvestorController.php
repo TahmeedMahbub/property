@@ -31,6 +31,23 @@ class InvestorController extends Controller
         $investors = $query->latest()->paginate(15)->withQueryString();
         $projects = $company->projects()->orderBy('name')->get();
 
+        // Calculate each investor's share of their project's total active investment.
+        $projectIdsOnPage = $investors->pluck('project_id')->unique()->all();
+        $projectTotals = ProjectInvestor::whereIn('project_id', $projectIdsOnPage)
+            ->where('status', 'active')
+            ->selectRaw('project_id, COALESCE(SUM(investment_amount), 0) as total')
+            ->groupBy('project_id')
+            ->pluck('total', 'project_id');
+
+        $investors->getCollection()->transform(function ($investor) use ($projectTotals) {
+            $total = (float) ($projectTotals[$investor->project_id] ?? 0);
+            $investor->calculated_percentage = ($total > 0 && $investor->status === 'active')
+                ? round(((float) $investor->investment_amount / $total) * 100, 6)
+                : 0.0;
+
+            return $investor;
+        });
+
         return view('contents.property.investors.index', compact('investors', 'projects'));
     }
 
@@ -52,7 +69,6 @@ class InvestorController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:30',
             'investment_amount' => 'nullable|numeric|min:0',
-            'investment_percentage' => 'nullable|numeric|min:0|max:100',
             'investment_type' => 'nullable|string|in:equity,debt,mezzanine',
             'invested_at' => 'nullable|date',
             'expected_return' => 'nullable|numeric|min:0',
@@ -101,7 +117,6 @@ class InvestorController extends Controller
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:30',
             'investment_amount' => 'nullable|numeric|min:0',
-            'investment_percentage' => 'nullable|numeric|min:0|max:100',
             'investment_type' => 'nullable|string|in:equity,debt,mezzanine',
             'invested_at' => 'nullable|date',
             'expected_return' => 'nullable|numeric|min:0',
