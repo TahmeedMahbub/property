@@ -6,6 +6,7 @@ use App\Models\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
@@ -71,9 +72,19 @@ class Company extends Model
         return $this->hasMany(Shareholder::class);
     }
 
+    public function metrics(): HasOne
+    {
+        return $this->hasOne(CompanyMetrics::class);
+    }
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
+    }
+
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
     }
 
     public function unitTypes(): HasMany

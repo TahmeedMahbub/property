@@ -3,6 +3,12 @@
 @section('title', 'Shareholders')
 
 @section('content')
+<style>
+    /* Let the actions three-dot dropdown overflow the table instead of being clipped. */
+    .shareholders-table {
+        overflow: visible;
+    }
+</style>
 <div class="row gy-4">
     <div class="col-12">
         <nav aria-label="breadcrumb">
@@ -45,13 +51,14 @@
                     </div>
                 </form>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive shareholders-table">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th class="d-none d-md-table-cell">Email</th>
-                            <th>Share %</th>
+                            {{-- <th class="d-none d-md-table-cell">Shares</th> --}}
+                            <th>Ownership %</th>
                             <th class="d-none d-md-table-cell">Amount</th>
                             <th>Status</th>
                             <th class="text-end">Actions</th>
@@ -62,7 +69,8 @@
                             <tr>
                                 <td class="fw-medium">{{ $sh->name }}</td>
                                 <td class="d-none d-md-table-cell">{{ $sh->email ?? '—' }}</td>
-                                <td>{{ $sh->share_percentage ? $sh->share_percentage . '%' : '—' }}</td>
+                                {{-- <td class="d-none d-md-table-cell">{{ $sh->shares_owned ? rtrim(rtrim(number_format($sh->shares_owned, 6), '0'), '.') : '—' }}</td> --}}
+                                <td>{{ $sh->ownership_percentage > 0 ? rtrim(rtrim(number_format($sh->ownership_percentage, 6), '0'), '.') . '%' : '—' }}</td>
                                 <td class="d-none d-md-table-cell">{{ $sh->share_amount ? '৳' . number_format($sh->share_amount) : '—' }}</td>
                                 <td>
                                     <span class="badge bg-label-{{ $sh->status === 'active' ? 'success' : 'secondary' }}">
@@ -70,23 +78,34 @@
                                     </span>
                                 </td>
                                 <td class="text-end">
-                                    <a href="{{ url("/shareholders/{$sh->uuid}/edit") }}"
-                                        class="btn btn-sm btn-icon btn-text-secondary">
-                                        <i class="mdi mdi-pencil-outline"></i>
-                                    </a>
-                                    <form method="POST" action="{{ url("/shareholders/{$sh->uuid}") }}"
-                                        class="d-inline" onsubmit="return confirm('Delete this shareholder?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-icon btn-text-danger">
-                                            <i class="mdi mdi-delete-outline"></i>
+                                    <div class="dropdown">
+                                        <button type="button" class="btn btn-sm btn-icon btn-text-secondary rounded-pill dropdown-toggle hide-arrow"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="mdi mdi-dots-vertical"></i>
                                         </button>
-                                    </form>
+                                        <div class="dropdown-menu dropdown-menu-end">
+                                            <a class="dropdown-item" href="{{ url("/shareholders/{$sh->uuid}/investment") }}">
+                                                <i class="mdi mdi-cash-multiple me-1"></i> Manage Investment
+                                            </a>
+                                            <a class="dropdown-item" href="{{ url("/shareholders/{$sh->uuid}/edit") }}">
+                                                <i class="mdi mdi-pencil-outline me-1"></i> Edit
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                            <form method="POST" action="{{ url("/shareholders/{$sh->uuid}") }}"
+                                                onsubmit="return confirm('Delete this shareholder?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="mdi mdi-delete-outline me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">
+                                <td colspan="7" class="text-center text-muted py-4">
                                     No shareholders found. <a href="{{ url('/shareholders/create') }}">Add one</a>.
                                 </td>
                             </tr>

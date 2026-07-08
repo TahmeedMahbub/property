@@ -43,22 +43,13 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone"
                                 value="{{ old('phone', $shareholder->phone) }}">
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="share_percentage" class="form-label">Share %</label>
-                            <input type="number" step="0.01" class="form-control" id="share_percentage" name="share_percentage"
-                                value="{{ old('share_percentage', $shareholder->share_percentage) }}" min="0" max="100">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="share_amount" class="form-label">Share Amount (৳)</label>
-                            <input type="number" step="0.01" class="form-control" id="share_amount" name="share_amount"
-                                value="{{ old('share_amount', $shareholder->share_amount) }}">
-                        </div>
                     </div>
+
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label for="share_type" class="form-label">Share Type</label>
@@ -88,6 +79,9 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{{ url("/shareholders/{$shareholder->uuid}/investment") }}" class="btn btn-outline-primary">
+                            <i class="mdi mdi-cash-multiple me-1"></i>Manage Investment
+                        </a>
                         <a href="{{ url('/shareholders') }}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>

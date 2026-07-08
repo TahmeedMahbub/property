@@ -31,8 +31,7 @@ class ShareholderTest extends TestCase
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'phone' => '+8801712345678',
-            'share_percentage' => 25.5,
-            'share_amount' => 5000000,
+            'investment_amount' => 5000000,
             'share_type' => 'common',
             'acquired_at' => '2025-01-01',
         ]);
@@ -40,11 +39,15 @@ class ShareholderTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment(['name' => 'John Doe']);
 
-        $this->assertDatabaseHas('shareholders', [
+        $this->assertDatabaseHas('p_shareholders', [
             'company_id' => $company->id,
             'name' => 'John Doe',
-            'share_percentage' => 25.5,
         ]);
+
+        // Investing 5,000,000 at the par price of 1 issues 5,000,000 shares (100%).
+        $shareholder = Shareholder::where('company_id', $company->id)->firstOrFail();
+        $this->assertEqualsWithDelta(5000000.0, (float) $shareholder->shares_owned, 0.000001);
+        $this->assertEqualsWithDelta(100.0, (float) $shareholder->ownership_percentage, 0.000001);
     }
 
     public function test_owner_can_create_shareholder_linked_to_user(): void
@@ -55,11 +58,11 @@ class ShareholderTest extends TestCase
         $response = $this->apiAs($owner, 'POST', "/api/companies/{$company->uuid}/shareholders", [
             'user_id' => $linkedUser->uuid,
             'name' => $linkedUser->name,
-            'share_percentage' => 10,
+            'investment_amount' => 10000,
         ]);
 
         $response->assertStatus(201);
-        $this->assertDatabaseHas('shareholders', [
+        $this->assertDatabaseHas('p_shareholders', [
             'company_id' => $company->id,
             'user_id' => $linkedUser->id,
         ]);
@@ -71,14 +74,15 @@ class ShareholderTest extends TestCase
         $shareholder = Shareholder::factory()->create(['company_id' => $company->id]);
 
         $response = $this->apiAs($owner, 'PUT', "/api/companies/{$company->uuid}/shareholders/{$shareholder->uuid}", [
-            'share_percentage' => 30,
-            'share_amount' => 7000000,
+            'name' => 'Updated Name',
+            'status' => 'inactive',
         ]);
 
         $response->assertOk();
-        $this->assertDatabaseHas('shareholders', [
+        $this->assertDatabaseHas('p_shareholders', [
             'id' => $shareholder->id,
-            'share_percentage' => 30,
+            'name' => 'Updated Name',
+            'status' => 'inactive',
         ]);
     }
 
@@ -90,7 +94,7 @@ class ShareholderTest extends TestCase
         $response = $this->apiAs($owner, 'DELETE', "/api/companies/{$company->uuid}/shareholders/{$shareholder->uuid}");
 
         $response->assertOk();
-        $this->assertSoftDeleted('shareholders', ['id' => $shareholder->id]);
+        $this->assertSoftDeleted('p_shareholders', ['id' => $shareholder->id]);
     }
 
     public function test_viewer_can_view_shareholders(): void
@@ -111,7 +115,7 @@ class ShareholderTest extends TestCase
 
         $response = $this->apiAs($viewer, 'POST', "/api/companies/{$company->uuid}/shareholders", [
             'name' => 'Hacker',
-            'share_percentage' => 100,
+            'investment_amount' => 100,
         ]);
 
         $response->assertStatus(403);

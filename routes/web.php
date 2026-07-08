@@ -7,6 +7,9 @@ use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DocumentDownloadController;
 use App\Http\Controllers\Web\FloorController;
 use App\Http\Controllers\Web\InvestorController;
+use App\Http\Controllers\Web\LoanController;
+use App\Http\Controllers\Web\LoanReportController;
+use App\Http\Controllers\Web\LoanRepaymentController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ProjectController;
@@ -72,13 +75,21 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     Route::resource('members', MemberController::class)->except(['show']);
 
     // Shareholders
+    Route::get('/investments', [ShareholderController::class, 'investments'])->name('shareholders.investments');
+    Route::get('/shareholders/{uuid}/investment', [ShareholderController::class, 'investment'])->name('shareholders.investment');
+    Route::post('/shareholders/{uuid}/transaction', [ShareholderController::class, 'transact'])->name('shareholders.transaction');
     Route::resource('shareholders', ShareholderController::class)->except(['show']);
 
     // Investors
     Route::resource('investors', InvestorController::class)->except(['show']);
-
-    // Customers
     Route::resource('customers', CustomerController::class)->except(['show']);
+
+    // Loans
+    Route::get('/loans/reports', [LoanReportController::class, 'index'])->name('loans.reports');
+    Route::get('/loans/reports/{type}', [LoanReportController::class, 'show'])->name('loans.reports.show');
+    Route::post('/loans/{loan}/repayments', [LoanRepaymentController::class, 'store'])->name('loans.repayments.store');
+    Route::delete('/loans/{loan}/repayments/{repayment}', [LoanRepaymentController::class, 'destroy'])->name('loans.repayments.destroy');
+    Route::resource('loans', LoanController::class);
 
     // Documents (authorized download/preview)
     Route::get('/documents/{document}/download', [DocumentDownloadController::class, 'download'])->name('documents.auth-download');

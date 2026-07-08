@@ -42,20 +42,15 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="phone" class="form-label">Phone</label>
                             <input type="text" class="form-control" id="phone" name="phone"
                                 value="{{ old('phone') }}">
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="share_percentage" class="form-label">Share %</label>
-                            <input type="number" step="0.01" class="form-control" id="share_percentage" name="share_percentage"
-                                value="{{ old('share_percentage') }}" min="0" max="100">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="share_amount" class="form-label">Share Amount (৳)</label>
-                            <input type="number" step="0.01" class="form-control" id="share_amount" name="share_amount"
-                                value="{{ old('share_amount') }}">
+                        <div class="col-md-6 mb-3">
+                            <label for="investment_amount" class="form-label">Investment Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" id="investment_amount" name="investment_amount"
+                                value="{{ old('investment_amount') }}" min="0" required>
                         </div>
                     </div>
                     <div class="row">

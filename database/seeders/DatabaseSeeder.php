@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             RoleSeeder::class,
             PlatformSeeder::class,
+            LoanSeeder::class,
         ]);
     }
 }

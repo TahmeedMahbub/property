@@ -52,17 +52,12 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="investment_amount" class="form-label">Amount (৳)</label>
                             <input type="number" step="0.01" class="form-control" id="investment_amount" name="investment_amount"
                                 value="{{ old('investment_amount', $investor->investment_amount) }}">
                         </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="investment_percentage" class="form-label">Percentage %</label>
-                            <input type="number" step="0.01" class="form-control" id="investment_percentage" name="investment_percentage"
-                                value="{{ old('investment_percentage', $investor->investment_percentage) }}" min="0" max="100">
-                        </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6 mb-3">
                             <label for="investment_type" class="form-label">Type</label>
                             <select class="form-select" id="investment_type" name="investment_type">
                                 <option value="">Select</option>

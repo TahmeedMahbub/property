@@ -73,7 +73,7 @@
                                 <td class="fw-medium">{{ $investor->name }}</td>
                                 <td>{{ $investor->project->name ?? '—' }}</td>
                                 <td class="d-none d-md-table-cell">{{ $investor->investment_amount ? '৳' . number_format($investor->investment_amount) : '—' }}</td>
-                                <td class="d-none d-md-table-cell">{{ $investor->investment_percentage ? $investor->investment_percentage . '%' : '—' }}</td>
+                                <td class="d-none d-md-table-cell">{{ ($investor->calculated_percentage ?? 0) > 0 ? rtrim(rtrim(number_format($investor->calculated_percentage, 6), '0'), '.') . '%' : '—' }}</td>
                                 <td>
                                     @php
                                         $colors = ['active' => 'success', 'inactive' => 'secondary', 'exited' => 'warning'];

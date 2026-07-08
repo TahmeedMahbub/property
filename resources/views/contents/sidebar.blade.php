@@ -74,21 +74,59 @@
             </a>
         </li>
 
-        {{-- Shareholders --}}
-        <li class="menu-item {{ request()->is('shareholders*') ? 'active' : '' }}">
-            <a href="{{ url('/shareholders') }}" class="menu-link">
+        {{-- Shares & Holders --}}
+        @php
+            $sharesActive = request()->is('shareholders*') || request()->is('investments*');
+        @endphp
+        <li class="menu-item {{ $sharesActive ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons mdi mdi-account-cash-outline"></i>
-                <div>Shareholders</div>
+                <div>Shares &amp; Holders</div>
             </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->is('shareholders*') ? 'active' : '' }}">
+                    <a href="{{ url('/shareholders') }}" class="menu-link">
+                        <div>Partners</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->is('investments*') ? 'active' : '' }}">
+                    <a href="{{ url('/investments') }}" class="menu-link">
+                        <div>Investments</div>
+                    </a>
+                </li>
+            </ul>
+        </li>
+
+        {{-- Loans --}}
+        @php
+            $loansActive = request()->is('loans*');
+        @endphp
+        <li class="menu-item {{ $loansActive ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons mdi mdi-bank-outline"></i>
+                <div>Loans</div>
+            </a>
+            <ul class="menu-sub">
+                <li class="menu-item {{ request()->is('loans') || (request()->is('loans/*') && ! request()->is('loans/reports*')) ? 'active' : '' }}">
+                    <a href="{{ url('/loans') }}" class="menu-link">
+                        <div>All Loans</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->is('loans/reports*') ? 'active' : '' }}">
+                    <a href="{{ url('/loans/reports') }}" class="menu-link">
+                        <div>Reports</div>
+                    </a>
+                </li>
+            </ul>
         </li>
 
         {{-- Investors --}}
-        <li class="menu-item {{ request()->is('investors*') ? 'active' : '' }}">
+        {{-- <li class="menu-item {{ request()->is('investors*') ? 'active' : '' }}">
             <a href="{{ url('/investors') }}" class="menu-link">
                 <i class="menu-icon tf-icons mdi mdi-cash-multiple"></i>
                 <div>Investors</div>
             </a>
-        </li>
+        </li> --}}
 
         {{-- Customers --}}
         <li class="menu-item {{ request()->is('customers*') ? 'active' : '' }}">

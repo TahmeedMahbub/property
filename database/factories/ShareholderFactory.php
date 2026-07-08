@@ -22,6 +22,8 @@ class ShareholderFactory extends Factory
             'phone' => fake()->phoneNumber(),
             'share_percentage' => fake()->randomFloat(4, 1, 50),
             'share_amount' => fake()->randomFloat(2, 100000, 10000000),
+            'shares_owned' => 0,
+            'ownership_percentage' => 0,
             'share_type' => 'common',
             'acquired_at' => fake()->date(),
             'status' => 'active',

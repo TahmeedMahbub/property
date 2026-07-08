@@ -66,6 +66,11 @@ class Project extends Model
         return $this->hasMany(Unit::class);
     }
 
+    public function loans(): HasMany
+    {
+        return $this->hasMany(Loan::class);
+    }
+
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
