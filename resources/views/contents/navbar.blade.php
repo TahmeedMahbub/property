@@ -40,10 +40,23 @@
                     </li>
                     <li><div class="dropdown-divider"></div></li>
                     <li>
+                        <a class="dropdown-item" href="{{ url('/profile') }}">
+                            <i class="mdi mdi-account-outline me-2"></i> {{ t('nav.profile') }}
+                        </a>
+                    </li>
+                    <li>
+                        @php($currentLang = app()->getLocale())
+                        <a class="dropdown-item" href="{{ url('?lang=' . ($currentLang === 'bn' ? 'en' : 'bn')) }}">
+                            <i class="mdi mdi-translate me-2"></i>
+                            {{ $currentLang === 'bn' ? 'English' : 'বাংলা' }}
+                        </a>
+                    </li>
+                    <li><div class="dropdown-divider"></div></li>
+                    <li>
                         <form method="POST" action="{{ url('/logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item">
-                                <i class="mdi mdi-logout me-2"></i> Logout
+                                <i class="mdi mdi-logout me-2"></i> {{ t('auth.logout') }}
                             </button>
                         </form>
                     </li>
