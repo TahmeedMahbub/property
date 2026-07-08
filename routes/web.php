@@ -4,9 +4,11 @@ use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\BuildingController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\DocumentDownloadController;
 use App\Http\Controllers\Web\FloorController;
 use App\Http\Controllers\Web\InvestorController;
 use App\Http\Controllers\Web\MemberController;
+use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ProjectController;
 use App\Http\Controllers\Web\ShareholderController;
 use App\Http\Controllers\Web\UnitController;
@@ -44,6 +46,12 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'changePassword'])->name('profile.password');
+    Route::put('/profile/company', [ProfileController::class, 'updateCompany'])->name('profile.company');
+
     // Projects
     Route::resource('projects', ProjectController::class)->except(['show']);
 
@@ -70,4 +78,16 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
 
     // Customers
     Route::resource('customers', CustomerController::class)->except(['show']);
+
+    // Documents (authorized download/preview)
+    Route::get('/documents/{document}/download', [DocumentDownloadController::class, 'download'])->name('documents.auth-download');
+    Route::get('/documents/{document}/preview', [DocumentDownloadController::class, 'preview'])->name('documents.preview');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Signed Document Download (no auth required, signature validates access)
+|--------------------------------------------------------------------------
+*/
+Route::get('/documents/{document}/signed', [DocumentDownloadController::class, 'signedDownload'])
+    ->name('documents.download');

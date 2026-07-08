@@ -44,6 +44,31 @@ return [
             'throw' => false,
         ],
 
+        /*
+        |----------------------------------------------------------------------
+        | Documents Disk — all document uploads go here
+        |----------------------------------------------------------------------
+        | Default: local private storage.
+        | Future: switch to Cloudflare R2 by changing DOCUMENT_DISK_DRIVER
+        |         and setting the R2 credentials in .env.
+        */
+        'documents' => env('DOCUMENT_DISK_DRIVER', 'local') === 's3' ? [
+            'driver' => 's3',
+            'key' => env('DOCUMENT_R2_ACCESS_KEY_ID'),
+            'secret' => env('DOCUMENT_R2_SECRET_ACCESS_KEY'),
+            'region' => env('DOCUMENT_R2_REGION', 'auto'),
+            'bucket' => env('DOCUMENT_R2_BUCKET'),
+            'url' => env('DOCUMENT_R2_URL'),
+            'endpoint' => env('DOCUMENT_R2_ENDPOINT'),
+            'use_path_style_endpoint' => false,
+            'throw' => true,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/private/documents'),
+            'visibility' => 'private',
+            'throw' => true,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
