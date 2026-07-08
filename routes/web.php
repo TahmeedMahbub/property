@@ -22,7 +22,7 @@ Route::get('/', function () {
     if (auth()->check()) {
         return redirect('/dashboard');
     }
-    return redirect('/login');
+    return view('landing');
 });
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
