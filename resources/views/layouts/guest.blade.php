@@ -134,8 +134,7 @@
         <span class="hk-cover-blob b1"></span>
         <span class="hk-cover-blob b2"></span>
 
-        <div class="hk-auth-card">
-            {{-- Brand --}}
+        {{-- <div class="hk-auth-card">
             <div class="text-center mb-4">
                 <a href="{{ url('/') }}" class="hk-auth-brand-link">
                     <span class="hk-auth-brand-logo">
@@ -144,10 +143,10 @@
                     </span>
                     <span class="hk-auth-brand-text">{{ t('brand.name') }}</span>
                 </a>
-            </div>
+            </div> --}}
 
             @yield('auth-content')
-        </div>
+        {{-- </div> --}}
     </div>
 
     @include('contents.end-section')

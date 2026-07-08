@@ -256,7 +256,7 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
       <a href="#faq">{{ $lang === 'bn' ? 'জিজ্ঞাসা' : 'FAQ' }}</a>
       <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch">{{ $lang === 'bn' ? 'EN' : 'বাং' }}</a>
       <a href="/login" class="btn-nav">{{ $lang === 'bn' ? 'লগইন' : 'Login' }}</a>
-      <a href="/login" class="btn-nav-cta">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+      <a href="/register" class="btn-nav-cta">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
     </div>
     <button class="hamburger" onclick="document.querySelector('.mobile-menu').classList.toggle('active')" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -268,7 +268,7 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
     <a href="#faq">{{ $lang === 'bn' ? 'জিজ্ঞাসা' : 'FAQ' }}</a>
     <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch" style="margin:8px 16px;width:fit-content">{{ $lang === 'bn' ? 'EN' : 'বাং' }}</a>
     <a href="/login" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;border:2px solid var(--primary);font-weight:600;color:var(--primary)">{{ $lang === 'bn' ? 'লগইন' : 'Login' }}</a>
-    <a href="/login" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+    <a href="/register" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
   </div>
 </nav>
 
@@ -292,8 +292,8 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
         @endif
       </p>
       <div class="hero-btns">
-        <a href="/login" class="btn-primary">{{ $lang === 'bn' ? 'ফ্রি ট্রায়াল শুরু করুন' : 'Start Free Trial' }} <span class="material-icons-round">arrow_forward</span></a>
-        <a href="#features" class="btn-secondary">{{ $lang === 'bn' ? 'ফিচার দেখুন' : 'See Features' }}</a>
+        <a href="/register" class="btn-primary">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start For Free' }} <span class="material-icons-round">arrow_forward</span></a>
+        <a href="/login" class="btn-secondary">{{ $lang === 'bn' ? 'ফিচার দেখুন' : 'See Features' }}</a>
       </div>
       <div class="hero-stats">
         <div class="hero-stat"><div class="num">{{ $lang === 'bn' ? '৫০০+' : '500+' }}</div><div class="label">{{ $lang === 'bn' ? 'সক্রিয় কোম্পানি' : 'Active Companies' }}</div></div>
@@ -419,7 +419,7 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
           <li class="disabled"><span class="material-icons-round">cancel</span>{{ $lang === 'bn' ? 'ডকুমেন্ট ম্যানেজমেন্ট' : 'Document Management' }}</li>
           <li class="disabled"><span class="material-icons-round">cancel</span>{{ $lang === 'bn' ? 'API অ্যাক্সেস' : 'API Access' }}</li>
         </ul>
-        <a href="/login" class="btn-secondary">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+        <a href="/register" class="btn-secondary">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
       </div>
       {{-- PRO --}}
       <div class="price-card popular">
@@ -535,7 +535,7 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <section class="cta-section">
   <h2>{{ $lang === 'bn' ? 'আজই শুরু করুন — সম্পূর্ণ ফ্রি!' : 'Start Today — Completely Free!' }}</h2>
   <p>{{ $lang === 'bn' ? 'হাজার হাজার রিয়েল এস্টেট ব্যবসা ইতোমধ্যে হিসাবিজ ব্যবহার করছে। আপনিও যোগ দিন।' : 'Thousands of real estate businesses already use Hishabiz. Join them today.' }}</p>
-  <a href="/login" class="btn-accent">{{ $lang === 'bn' ? 'ফ্রি অ্যাকাউন্ট তৈরি করুন' : 'Create Free Account' }} <span class="material-icons-round">arrow_forward</span></a>
+  <a href="/register" class="btn-accent">{{ $lang === 'bn' ? 'ফ্রি অ্যাকাউন্ট তৈরি করুন' : 'Create Free Account' }} <span class="material-icons-round">arrow_forward</span></a>
 </section>
 
 <!-- FOOTER -->
