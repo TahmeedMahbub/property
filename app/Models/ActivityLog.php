@@ -10,6 +10,8 @@ class ActivityLog extends Model
 {
     public $timestamps = false;
 
+    protected $table = 'p_activity_logs';
+
     protected $fillable = [
         'company_id',
         'user_id',

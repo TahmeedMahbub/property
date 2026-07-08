@@ -13,6 +13,8 @@ class Building extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_buildings';
+
     protected $fillable = [
         'company_id',
         'project_id',

@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('document_folders', function (Blueprint $table) {
+        Schema::create('p_document_folders', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('parent_id')->nullable()->constrained('document_folders')->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('p_document_folders')->cascadeOnDelete();
             $table->string('name');
             $table->string('path')->comment('Full materialized path for fast lookups');
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('p_users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
 
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('document_folders');
+        Schema::dropIfExists('p_document_folders');
     }
 };

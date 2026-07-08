@@ -14,6 +14,8 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasUuid, Notifiable, SoftDeletes;
 
+    protected $table = 'p_users';
+
     protected $fillable = [
         'name',
         'email',
@@ -50,7 +52,7 @@ class User extends Authenticatable
 
     public function companies()
     {
-        return $this->belongsToMany(Company::class, 'company_memberships')
+        return $this->belongsToMany(Company::class, 'p_company_memberships')
             ->withPivot(['role_id', 'title', 'department', 'is_owner', 'status', 'joined_at'])
             ->withTimestamps();
     }
@@ -73,6 +75,11 @@ class User extends Authenticatable
     public function customerProfiles(): HasMany
     {
         return $this->hasMany(Customer::class);
+    }
+
+    public function notifications()
+    {
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')->latest();
     }
 
     // ─── Scopes ──────────────────────────────────────────────────

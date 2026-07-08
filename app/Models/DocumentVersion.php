@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DocumentVersion extends Model
 {
+    protected $table = 'p_document_versions';
+
     protected $fillable = [
         'document_id',
         'version_number',

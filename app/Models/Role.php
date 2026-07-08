@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
+    protected $table = 'p_roles';
+
     protected $fillable = [
         'company_id',
         'name',
@@ -35,7 +37,7 @@ class Role extends Model
 
     public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(Permission::class, 'role_permissions');
+        return $this->belongsToMany(Permission::class, 'p_role_permissions');
     }
 
     public function memberships(): HasMany

@@ -13,6 +13,8 @@ class Shareholder extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_shareholders';
+
     protected $fillable = [
         'company_id',
         'user_id',

@@ -13,6 +13,8 @@ class Employee extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_employees';
+
     protected $fillable = [
         'company_id',
         'user_id',

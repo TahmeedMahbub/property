@@ -13,6 +13,8 @@ class Floor extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_floors';
+
     protected $fillable = [
         'company_id',
         'project_id',

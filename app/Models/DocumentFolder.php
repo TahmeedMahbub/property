@@ -12,6 +12,8 @@ class DocumentFolder extends Model
 {
     use HasUuid, SoftDeletes;
 
+    protected $table = 'p_document_folders';
+
     protected $fillable = [
         'company_id',
         'parent_id',

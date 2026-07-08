@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Permission extends Model
 {
+    protected $table = 'p_permissions';
+
     protected $fillable = [
         'name',
         'slug',
@@ -20,7 +22,7 @@ class Permission extends Model
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'role_permissions');
+        return $this->belongsToMany(Role::class, 'p_role_permissions');
     }
 
     // ─── Scopes ──────────────────────────────────────────────────

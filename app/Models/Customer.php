@@ -13,6 +13,8 @@ class Customer extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_customers';
+
     protected $fillable = [
         'company_id',
         'user_id',

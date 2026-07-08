@@ -12,6 +12,8 @@ class Company extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_companies';
+
     protected $fillable = [
         'name',
         'legal_name',
@@ -54,7 +56,7 @@ class Company extends Model
 
     public function members()
     {
-        return $this->belongsToMany(User::class, 'company_memberships')
+        return $this->belongsToMany(User::class, 'p_company_memberships')
             ->withPivot(['role_id', 'title', 'department', 'is_owner', 'status', 'joined_at'])
             ->withTimestamps();
     }

@@ -13,6 +13,8 @@ class ProjectInvestor extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_project_investors';
+
     protected $fillable = [
         'project_id',
         'user_id',

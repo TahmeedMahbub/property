@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class DocumentCategory extends Model
 {
+    protected $table = 'p_document_categories';
+
     protected $fillable = [
         'company_id',
         'name',

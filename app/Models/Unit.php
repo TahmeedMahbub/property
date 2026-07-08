@@ -12,6 +12,8 @@ class Unit extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_units';
+
     protected $fillable = [
         'company_id',
         'project_id',

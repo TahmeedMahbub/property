@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('failed_jobs', function (Blueprint $table) {
+        Schema::create('p_failed_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('uuid')->unique();
             $table->text('connection');
@@ -18,7 +18,7 @@ return new class extends Migration
             $table->timestamp('failed_at')->useCurrent();
         });
 
-        Schema::create('personal_access_tokens', function (Blueprint $table) {
+        Schema::create('p_personal_access_tokens', function (Blueprint $table) {
             $table->id();
             $table->morphs('tokenable');
             $table->string('name');
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('notifications', function (Blueprint $table) {
+        Schema::create('p_notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
             $table->morphs('notifiable');
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('jobs', function (Blueprint $table) {
+        Schema::create('p_jobs', function (Blueprint $table) {
             $table->id();
             $table->string('queue')->index();
             $table->longText('payload');
@@ -48,7 +48,7 @@ return new class extends Migration
             $table->unsignedInteger('created_at');
         });
 
-        Schema::create('job_batches', function (Blueprint $table) {
+        Schema::create('p_job_batches', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name');
             $table->integer('total_jobs');
@@ -61,13 +61,13 @@ return new class extends Migration
             $table->integer('finished_at')->nullable();
         });
 
-        Schema::create('cache', function (Blueprint $table) {
+        Schema::create('p_cache', function (Blueprint $table) {
             $table->string('key')->primary();
             $table->mediumText('value');
             $table->integer('expiration');
         });
 
-        Schema::create('cache_locks', function (Blueprint $table) {
+        Schema::create('p_cache_locks', function (Blueprint $table) {
             $table->string('key')->primary();
             $table->string('owner');
             $table->integer('expiration');
@@ -76,12 +76,12 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('cache_locks');
-        Schema::dropIfExists('cache');
-        Schema::dropIfExists('job_batches');
-        Schema::dropIfExists('jobs');
-        Schema::dropIfExists('notifications');
-        Schema::dropIfExists('personal_access_tokens');
-        Schema::dropIfExists('failed_jobs');
+        Schema::dropIfExists('p_cache_locks');
+        Schema::dropIfExists('p_cache');
+        Schema::dropIfExists('p_job_batches');
+        Schema::dropIfExists('p_jobs');
+        Schema::dropIfExists('p_notifications');
+        Schema::dropIfExists('p_personal_access_tokens');
+        Schema::dropIfExists('p_failed_jobs');
     }
 };

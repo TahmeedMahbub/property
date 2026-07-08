@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('company_memberships', function (Blueprint $table) {
+        Schema::create('p_company_memberships', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('role_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('p_users')->cascadeOnDelete();
+            $table->foreignId('role_id')->nullable()->constrained('p_roles')->nullOnDelete();
             $table->string('title')->nullable();
             $table->string('department', 100)->nullable();
             $table->boolean('is_owner')->default(false);
@@ -29,6 +29,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('company_memberships');
+        Schema::dropIfExists('p_company_memberships');
     }
 };

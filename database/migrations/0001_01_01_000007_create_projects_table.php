@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('p_projects', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->text('description')->nullable();
@@ -35,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('p_projects');
     }
 };

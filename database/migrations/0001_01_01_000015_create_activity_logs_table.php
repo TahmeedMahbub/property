@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('activity_logs', function (Blueprint $table) {
+        Schema::create('p_activity_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('p_users')->nullOnDelete();
             $table->nullableMorphs('subject');
             $table->string('action', 50);
             $table->text('description')->nullable();
@@ -27,6 +27,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('activity_logs');
+        Schema::dropIfExists('p_activity_logs');
     }
 };

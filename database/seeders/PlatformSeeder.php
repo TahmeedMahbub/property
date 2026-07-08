@@ -14,10 +14,10 @@ class PlatformSeeder extends Seeder
     {
         // Create Super Admin
         $superAdmin = User::updateOrCreate(
-            ['email' => 'admin@platform.test'],
+            ['email' => 'admin@g.c'],
             [
                 'name' => 'Super Admin',
-                'password' => 'password',
+                'password' => '123456',
                 'is_super_admin' => true,
                 'email_verified_at' => now(),
                 'status' => 'active',
@@ -26,10 +26,10 @@ class PlatformSeeder extends Seeder
 
         // Create a demo company owner
         $owner = User::updateOrCreate(
-            ['email' => 'owner@demo.test'],
+            ['email' => 'owner@g.c'],
             [
                 'name' => 'Demo Owner',
-                'password' => 'password',
+                'password' => '123456',
                 'email_verified_at' => now(),
                 'status' => 'active',
             ],

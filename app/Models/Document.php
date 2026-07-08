@@ -14,6 +14,8 @@ class Document extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_documents';
+
     protected $fillable = [
         'company_id',
         'category_id',

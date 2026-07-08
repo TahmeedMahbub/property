@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('documents', function (Blueprint $table) {
+        Schema::create('p_documents', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('document_categories')->nullOnDelete();
-            $table->foreignId('folder_id')->nullable()->constrained('document_folders')->nullOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('category_id')->nullable()->constrained('p_document_categories')->nullOnDelete();
+            $table->foreignId('folder_id')->nullable()->constrained('p_document_folders')->nullOnDelete();
             $table->nullableMorphs('documentable');
             $table->string('title');
             $table->text('description')->nullable();
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('file_size');
             $table->string('mime_type', 100);
             $table->string('disk', 20)->default('local');
-            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('uploaded_by')->nullable()->constrained('p_users')->nullOnDelete();
             $table->boolean('is_public')->default(false);
             $table->json('metadata')->nullable();
             $table->timestamps();
@@ -35,6 +35,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('documents');
+        Schema::dropIfExists('p_documents');
     }
 };

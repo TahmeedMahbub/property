@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('floors', function (Blueprint $table) {
+        Schema::create('p_floors', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('building_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('project_id')->constrained('p_projects')->cascadeOnDelete();
+            $table->foreignId('building_id')->constrained('p_buildings')->cascadeOnDelete();
             $table->string('name');
             $table->unsignedSmallInteger('floor_number');
             $table->text('description')->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('floors');
+        Schema::dropIfExists('p_floors');
     }
 };

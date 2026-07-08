@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('document_categories', function (Blueprint $table) {
+        Schema::create('p_document_categories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->nullable()->constrained('p_companies')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->string('description')->nullable();
-            $table->foreignId('parent_id')->nullable()->constrained('document_categories')->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('p_document_categories')->cascadeOnDelete();
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->timestamps();
 
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('document_categories');
+        Schema::dropIfExists('p_document_categories');
     }
 };

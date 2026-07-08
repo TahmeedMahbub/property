@@ -13,6 +13,8 @@ class UnitType extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_unit_types';
+
     protected $fillable = [
         'company_id',
         'name',

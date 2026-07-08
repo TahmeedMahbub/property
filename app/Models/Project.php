@@ -14,6 +14,8 @@ class Project extends Model
 {
     use HasFactory, HasUuid, SoftDeletes;
 
+    protected $table = 'p_projects';
+
     protected $fillable = [
         'company_id',
         'name',

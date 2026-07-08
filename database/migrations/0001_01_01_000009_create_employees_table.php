@@ -8,12 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('employees', function (Blueprint $table) {
+        Schema::create('p_employees', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('membership_id')->nullable()->constrained('company_memberships')->nullOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained('p_users')->nullOnDelete();
+            $table->foreignId('membership_id')->nullable()->constrained('p_company_memberships')->nullOnDelete();
             $table->string('employee_id_number')->nullable();
             $table->string('name');
             $table->string('email')->nullable();
@@ -42,6 +42,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('employees');
+        Schema::dropIfExists('p_employees');
     }
 };

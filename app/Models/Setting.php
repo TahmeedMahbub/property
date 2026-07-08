@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Setting extends Model
 {
+    protected $table = 'p_settings';
+
     protected $fillable = [
         'company_id',
         'group',

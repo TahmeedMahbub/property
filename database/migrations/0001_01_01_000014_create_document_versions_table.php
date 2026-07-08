@@ -8,16 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('document_versions', function (Blueprint $table) {
+        Schema::create('p_document_versions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('document_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('document_id')->constrained('p_documents')->cascadeOnDelete();
             $table->unsignedInteger('version_number');
             $table->string('file_name');
             $table->string('file_path');
             $table->unsignedBigInteger('file_size');
             $table->string('mime_type', 100);
             $table->text('changes_summary')->nullable();
-            $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('uploaded_by')->nullable()->constrained('p_users')->nullOnDelete();
             $table->timestamps();
 
             $table->unique(['document_id', 'version_number']);
@@ -26,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('document_versions');
+        Schema::dropIfExists('p_document_versions');
     }
 };

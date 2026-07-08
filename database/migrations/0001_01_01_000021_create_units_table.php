@@ -8,14 +8,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('units', function (Blueprint $table) {
+        Schema::create('p_units', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('building_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('floor_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('unit_type_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('project_id')->constrained('p_projects')->cascadeOnDelete();
+            $table->foreignId('building_id')->constrained('p_buildings')->cascadeOnDelete();
+            $table->foreignId('floor_id')->constrained('p_floors')->cascadeOnDelete();
+            $table->foreignId('unit_type_id')->nullable()->constrained('p_unit_types')->nullOnDelete();
             $table->string('unit_number');
             $table->decimal('size', 10, 2)->nullable();
             $table->decimal('price', 15, 2)->nullable();
@@ -38,6 +38,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('units');
+        Schema::dropIfExists('p_units');
     }
 };

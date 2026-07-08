@@ -8,11 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('buildings', function (Blueprint $table) {
+        Schema::create('p_buildings', function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid')->unique();
-            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('p_companies')->cascadeOnDelete();
+            $table->foreignId('project_id')->constrained('p_projects')->cascadeOnDelete();
             $table->string('name');
             $table->string('slug');
             $table->text('description')->nullable();
@@ -32,6 +32,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('buildings');
+        Schema::dropIfExists('p_buildings');
     }
 };
