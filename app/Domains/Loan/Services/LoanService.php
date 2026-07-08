@@ -4,18 +4,24 @@ namespace App\Domains\Loan\Services;
 
 use App\Models\Loan;
 use App\Models\LoanRepayment;
+use App\Services\JournalService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Loan lifecycle: create / update loans and record repayments.
  *
- * A loan is a liability, NOT equity. This service never touches the cap table,
- * share transactions or the shareholder-investment journal. It only tracks the
- * loan principal, repayments and interest expense.
+ * A loan is a liability, NOT equity. This service never touches the cap table
+ * or share transactions. Cash movements ARE posted to the company journal so
+ * the ledger stays the single source of truth: the loan principal is a credit
+ * (cash in) and every repayment is a debit (cash out).
  */
 class LoanService
 {
+    private const CATEGORY_RECEIVED = 'loan_received';
+
+    private const CATEGORY_REPAYMENT = 'loan_repayment';
+
     /**
      * Create a new loan for a company.
      *
@@ -27,7 +33,12 @@ class LoanService
         $data['created_by'] = $data['created_by'] ?? Auth::id();
         $data['status'] = $data['status'] ?? 'active';
 
-        return Loan::create($data);
+        return DB::transaction(function () use ($companyId, $data) {
+            $loan = Loan::create($data);
+            $this->syncLoanJournal($loan);
+
+            return $loan;
+        });
     }
 
     /**
@@ -37,13 +48,18 @@ class LoanService
      */
     public function update(Loan $loan, array $data): Loan
     {
-        $loan->update($data);
+        return DB::transaction(function () use ($loan, $data) {
+            $loan->update($data);
 
-        // Re-evaluate the status against the current balance unless it was
-        // explicitly defaulted/closed by the user.
-        $this->syncStatus($loan->refresh());
+            // Keep the ledger credit in step with the (possibly changed) principal.
+            $this->syncLoanJournal($loan->refresh());
 
-        return $loan;
+            // Re-evaluate the status against the current balance unless it was
+            // explicitly defaulted/closed by the user.
+            $this->syncStatus($loan);
+
+            return $loan;
+        });
     }
 
     /**
@@ -59,6 +75,7 @@ class LoanService
 
             $repayment = LoanRepayment::create($data);
 
+            $this->syncRepaymentJournal($loan, $repayment);
             $this->syncStatus($loan->load('repayments'));
 
             return $repayment;
@@ -71,11 +88,23 @@ class LoanService
     public function deleteRepayment(LoanRepayment $repayment): void
     {
         $loan = $repayment->loan;
-        $repayment->delete();
 
-        if ($loan) {
-            $this->syncStatus($loan->load('repayments'));
-        }
+        DB::transaction(function () use ($loan, $repayment) {
+            if ($loan) {
+                JournalService::reverseReference(
+                    companyId: $loan->company_id,
+                    reference: $repayment,
+                    category: self::CATEGORY_REPAYMENT,
+                    remarks: 'Reversed loan repayment to ' . $loan->lender_name,
+                );
+            }
+
+            $repayment->delete();
+
+            if ($loan) {
+                $this->syncStatus($loan->load('repayments'));
+            }
+        });
     }
 
     /**
@@ -100,6 +129,59 @@ class LoanService
      */
     public function delete(Loan $loan): void
     {
-        $loan->delete();
+        DB::transaction(function () use ($loan) {
+            // Unwind every cash movement this loan posted to the ledger.
+            foreach ($loan->repayments as $repayment) {
+                JournalService::reverseReference(
+                    companyId: $loan->company_id,
+                    reference: $repayment,
+                    category: self::CATEGORY_REPAYMENT,
+                    remarks: 'Reversed loan repayment to ' . $loan->lender_name,
+                );
+            }
+
+            JournalService::reverseReference(
+                companyId: $loan->company_id,
+                reference: $loan,
+                category: self::CATEGORY_RECEIVED,
+                remarks: 'Reversed loan from ' . $loan->lender_name,
+            );
+
+            $loan->delete();
+        });
+    }
+
+    /**
+     * Post/adjust the ledger credit for the loan principal (cash received).
+     */
+    private function syncLoanJournal(Loan $loan): void
+    {
+        JournalService::syncReference(
+            companyId: $loan->company_id,
+            reference: $loan,
+            targetCredit: (float) $loan->principal_amount,
+            category: self::CATEGORY_RECEIVED,
+            remarks: 'Loan received from ' . $loan->lender_name,
+            userId: $loan->created_by,
+        );
+    }
+
+    /**
+     * Post the ledger debit for a repayment (principal + interest + penalty out).
+     */
+    private function syncRepaymentJournal(Loan $loan, LoanRepayment $repayment): void
+    {
+        $total = (float) $repayment->principal_paid
+            + (float) $repayment->interest_paid
+            + (float) $repayment->penalty;
+
+        JournalService::syncReference(
+            companyId: $loan->company_id,
+            reference: $repayment,
+            targetCredit: -$total,
+            category: self::CATEGORY_REPAYMENT,
+            remarks: 'Loan repayment to ' . $loan->lender_name,
+            userId: $repayment->created_by,
+        );
     }
 }

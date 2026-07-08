@@ -14,6 +14,16 @@ class LoanRepaymentController extends Controller
         private readonly LoanService $loans = new LoanService(),
     ) {}
 
+    public function create(string $loanUuid)
+    {
+        $company = app('currentCompany');
+        $loan = Loan::forCompany($company->id)->where('uuid', $loanUuid)->firstOrFail();
+
+        abort_if($loan->status === 'closed', 404);
+
+        return view('contents.property.loans.repay', compact('loan'));
+    }
+
     public function store(StoreLoanRepaymentRequest $request, string $loanUuid)
     {
         $company = app('currentCompany');

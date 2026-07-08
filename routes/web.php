@@ -87,6 +87,7 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     // Loans
     Route::get('/loans/reports', [LoanReportController::class, 'index'])->name('loans.reports');
     Route::get('/loans/reports/{type}', [LoanReportController::class, 'show'])->name('loans.reports.show');
+    Route::get('/loans/{loan}/repayments/create', [LoanRepaymentController::class, 'create'])->name('loans.repayments.create');
     Route::post('/loans/{loan}/repayments', [LoanRepaymentController::class, 'store'])->name('loans.repayments.store');
     Route::delete('/loans/{loan}/repayments/{repayment}', [LoanRepaymentController::class, 'destroy'])->name('loans.repayments.destroy');
     Route::resource('loans', LoanController::class);

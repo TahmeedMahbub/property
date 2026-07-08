@@ -165,8 +165,8 @@
                                                 <i class="mdi mdi-eye-outline me-1"></i> View
                                             </a>
                                             @if ($loan->status !== 'closed')
-                                                <a class="dropdown-item" href="{{ url("/loans/{$loan->uuid}") }}#repay">
-                                                    <i class="mdi mdi-cash-multiple me-1"></i> Record Repayment
+                                                <a class="dropdown-item" href="{{ url("/loans/{$loan->uuid}/repayments/create") }}">
+                                                    <i class="mdi mdi-cash-multiple me-1"></i> Repay Loan
                                                 </a>
                                             @endif
                                             <a class="dropdown-item" href="{{ url("/loans/{$loan->uuid}/edit") }}">

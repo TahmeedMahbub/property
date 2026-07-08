@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domains\Loan\Services\LoanReportService;
 use App\Domains\Loan\Services\LoanService;
 use App\Models\Loan;
+use App\Services\JournalService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\SeedsRolesAndPermissions;
 use Tests\TestCase;
@@ -169,5 +170,33 @@ class LoanTest extends TestCase
 
         // First quarterly step after 10 Jan that is on/after 1 Feb is 10 Apr 2025.
         $this->assertSame('2025-04-10', $due->format('Y-m-d'));
+    }
+
+    public function test_loan_cash_flows_post_to_the_journal(): void
+    {
+        [$owner, $company] = $this->createOwnerWithCompany();
+        $service = new LoanService();
+
+        // Loan received: credit (cash in) for the full principal.
+        $loan = $this->makeLoan($company->id, ['principal_amount' => 500000]);
+        $this->assertEqualsWithDelta(500000.0, JournalService::balance($company->id), 0.01);
+
+        // Repayment: debit (cash out) for principal + interest + penalty.
+        $service->recordRepayment($loan, [
+            'payment_date' => '2025-02-01',
+            'principal_paid' => 100000,
+            'interest_paid' => 5000,
+            'penalty' => 500,
+            'payment_method' => 'bank_transfer',
+        ]);
+        $this->assertEqualsWithDelta(394500.0, JournalService::balance($company->id), 0.01);
+
+        // Deleting the repayment reverses its cash-out entry.
+        $service->deleteRepayment($loan->repayments()->latest('id')->first());
+        $this->assertEqualsWithDelta(500000.0, JournalService::balance($company->id), 0.01);
+
+        // Deleting the loan unwinds the disbursement credit.
+        $service->delete($loan);
+        $this->assertEqualsWithDelta(0.0, JournalService::balance($company->id), 0.01);
     }
 }

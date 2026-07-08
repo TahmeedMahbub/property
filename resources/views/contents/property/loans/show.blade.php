@@ -124,60 +124,15 @@
         </div>
 
         @if ($loan->status !== 'closed')
-            <div class="card" id="repay">
-                <div class="card-header"><h6 class="mb-0">Record a Repayment</h6></div>
-                <div class="card-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger py-2">
-                            <ul class="mb-0 ps-3">
-                                @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-                            </ul>
-                        </div>
-                    @endif
-                    <form method="POST" action="{{ url("/loans/{$loan->uuid}/repayments") }}">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="payment_date" class="form-label">Payment Date <span class="text-danger">*</span></label>
-                                <input type="date" class="form-control" id="payment_date" name="payment_date" value="{{ old('payment_date', date('Y-m-d')) }}" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="payment_method" class="form-label">Method <span class="text-danger">*</span></label>
-                                <select class="form-select" id="payment_method" name="payment_method" required>
-                                    @foreach (['bank_transfer' => 'Bank Transfer', 'cheque' => 'Cheque', 'cash' => 'Cash', 'mobile_banking' => 'Mobile Banking', 'other' => 'Other'] as $v => $l)
-                                        <option value="{{ $v }}" {{ old('payment_method', 'bank_transfer') === $v ? 'selected' : '' }}>{{ $l }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label for="principal_paid" class="form-label">Principal</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="principal_paid" name="principal_paid" value="{{ old('principal_paid', '0') }}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="interest_paid" class="form-label">Interest</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="interest_paid" name="interest_paid" value="{{ old('interest_paid', '0') }}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="penalty" class="form-label">Penalty</label>
-                                <input type="number" step="0.01" min="0" class="form-control" id="penalty" name="penalty" value="{{ old('penalty', '0') }}">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="reference_no" class="form-label">Reference / Cheque No</label>
-                                <input type="text" class="form-control" id="reference_no" name="reference_no" value="{{ old('reference_no') }}">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="remarks" class="form-label">Remarks</label>
-                                <input type="text" class="form-control" id="remarks" name="remarks" value="{{ old('remarks') }}">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="mdi mdi-cash-plus me-1"></i>Add Repayment
-                        </button>
-                    </form>
+            <div class="card">
+                <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h6 class="mb-1">Repayment</h6>
+                        <span class="text-muted small">Outstanding balance: ৳{{ number_format($loan->outstanding_balance, 2) }}</span>
+                    </div>
+                    <a href="{{ url("/loans/{$loan->uuid}/repayments/create") }}" class="btn btn-primary">
+                        <i class="mdi mdi-cash-plus me-1"></i>Record a Repayment
+                    </a>
                 </div>
             </div>
         @endif
