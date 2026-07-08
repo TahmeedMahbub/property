@@ -25,17 +25,17 @@
         </li>
 
         {{-- Projects --}}
-        <li class="menu-item {{ request()->is('projects*') ? 'active' : '' }}">
+        {{-- <li class="menu-item {{ request()->is('projects*') ? 'active' : '' }}">
             <a href="{{ url('/projects') }}" class="menu-link">
                 <i class="menu-icon tf-icons mdi mdi-city-variant-outline"></i>
                 <div>Projects</div>
             </a>
-        </li>
+        </li> --}}
 
         {{-- Property --}}
         @php
             $propertyActive = request()->is('unit-types*') || request()->is('buildings*')
-                || request()->is('floors*') || request()->is('units*');
+                || request()->is('floors*') || request()->is('units*') || request()->is('projects*');
         @endphp
         <li class="menu-item {{ $propertyActive ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -43,6 +43,11 @@
                 <div>Property</div>
             </a>
             <ul class="menu-sub">
+                <li class="menu-item {{ request()->is('projects*') ? 'active' : '' }}">
+                    <a href="{{ url('/projects') }}" class="menu-link">
+                        <div>Projects</div>
+                    </a>
+                </li>
                 <li class="menu-item {{ request()->is('unit-types*') ? 'active' : '' }}">
                     <a href="{{ url('/unit-types') }}" class="menu-link">
                         <div>Unit Types</div>
