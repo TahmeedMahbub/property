@@ -10,10 +10,10 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <style>
         :root {
-            --green: #1B8B5A;
-            --green-dark: #136642;
-            --green-light: #E8F5EE;
-            --green-mid: #27AE72;
+            --green: #18223B;
+            --green-dark: #0f1628;
+            --green-light: #E8EDF5;
+            --green-mid: #2a3f66;
             --accent: #F4A300;
             --red: #E53E3E;
             --text: #1A202C;
@@ -32,7 +32,7 @@
             font-family: 'Hind Siliguri', 'Poppins', sans-serif;
             color: var(--text);
             background:
-                radial-gradient(900px 500px at 12% 10%, rgba(27, 139, 90, .10), transparent 60%),
+                radial-gradient(900px 500px at 12% 10%, rgba(24, 34, 59, .10), transparent 60%),
                 radial-gradient(800px 500px at 90% 100%, rgba(244, 163, 0, .08), transparent 60%),
                 var(--bg);
             min-height: 100vh;
@@ -54,7 +54,7 @@
             border-radius: 24px;
             padding: 3rem 2.25rem;
             text-align: center;
-            box-shadow: 0 24px 60px rgba(27, 139, 90, .12);
+            box-shadow: 0 24px 60px rgba(24, 34, 59, .12);
             overflow: hidden;
         }
 
@@ -78,7 +78,7 @@
             display: grid;
             place-items: center;
             overflow: hidden;
-            /* box-shadow: 0 6px 16px rgba(27, 139, 90, .35); */
+            /* box-shadow: 0 6px 16px rgba(24, 34, 59, .35); */
         }
 
         .err-brand .logo img {
@@ -156,10 +156,10 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 100%);
             color: #fff;
-            box-shadow: 0 8px 20px rgba(27, 139, 90, .28);
+            box-shadow: 0 8px 20px rgba(24, 34, 59, .28);
         }
 
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(27, 139, 90, .34); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(24, 34, 59, .34); }
 
         .btn-ghost {
             background: var(--white);

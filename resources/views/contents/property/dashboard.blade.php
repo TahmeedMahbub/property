@@ -13,7 +13,7 @@
                         <h6 class="text-muted mb-1">Projects</h6>
                         <h4 class="fw-bold mb-0">{{ $stats['projects'] }}</h4>
                     </div>
-                    <div class="avatar avatar-md bg-label-primary rounded">
+                    <div class="avatar avatar-md bg-label-primary rounded d-flex align-items-center justify-content-center">
                         <i class="mdi mdi-city-variant-outline mdi-24px"></i>
                     </div>
                 </div>
@@ -28,7 +28,7 @@
                         <h6 class="text-muted mb-1">Buildings</h6>
                         <h4 class="fw-bold mb-0">{{ $stats['buildings'] }}</h4>
                     </div>
-                    <div class="avatar avatar-md bg-label-info rounded">
+                    <div class="avatar avatar-md bg-label-info rounded d-flex align-items-center justify-content-center">
                         <i class="mdi mdi-domain mdi-24px"></i>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                         <h6 class="text-muted mb-1">Total Units</h6>
                         <h4 class="fw-bold mb-0">{{ $stats['total_units'] }}</h4>
                     </div>
-                    <div class="avatar avatar-md bg-label-success rounded">
+                    <div class="avatar avatar-md bg-label-success rounded d-flex align-items-center justify-content-center">
                         <i class="mdi mdi-office-building-outline mdi-24px"></i>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                         <h6 class="text-muted mb-1">Available</h6>
                         <h4 class="fw-bold mb-0">{{ $stats['available_units'] }}</h4>
                     </div>
-                    <div class="avatar avatar-md bg-label-warning rounded">
+                    <div class="avatar avatar-md bg-label-warning rounded d-flex align-items-center justify-content-center">
                         <i class="mdi mdi-check-circle-outline mdi-24px"></i>
                     </div>
                 </div>

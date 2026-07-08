@@ -15,7 +15,7 @@
         align-items: flex-start;
         gap: 1rem;
         padding-bottom: 1.25rem;
-        border-bottom: 2px solid #1B8B5A;
+        border-bottom: 2px solid #18223B;
         flex-wrap: wrap;
     }
 
@@ -23,7 +23,7 @@
         font-size: 1.5rem;
         font-weight: 700;
         margin: 0 0 .35rem;
-        color: #1B8B5A;
+        color: #18223B;
     }
 
     .invoice-business-meta {
@@ -63,7 +63,7 @@
         font-weight: 600;
     }
 
-    .inv-badge-success { background: #e3f5ec; color: #1B8B5A; }
+    .inv-badge-success { background: #e8edf5; color: #18223B; }
     .inv-badge-danger { background: #fdecec; color: #d9534f; }
     .inv-badge-muted { background: #eef0f4; color: #6b7280; }
 
@@ -111,7 +111,7 @@
     }
 
     .invoice-table thead th {
-        background: #1B8B5A;
+        background: #18223B;
         color: #fff;
         font-weight: 600;
         padding: .65rem .75rem;
@@ -167,8 +167,8 @@
     .invoice-total-grand {
         font-weight: 700;
         font-size: 1.05rem;
-        color: #1B8B5A;
-        border-bottom: 2px solid #1B8B5A;
+        color: #18223B;
+        border-bottom: 2px solid #18223B;
     }
 
     .invoice-total-due {
@@ -180,7 +180,7 @@
         margin-top: 1.25rem;
         padding: .75rem 1rem;
         background: #f7f8fa;
-        border-left: 3px solid #1B8B5A;
+        border-left: 3px solid #18223B;
         border-radius: 4px;
         font-size: .9rem;
     }
@@ -215,7 +215,7 @@
     .invoice-thanks {
         font-size: .9rem;
         font-style: italic;
-        color: #1B8B5A;
+        color: #18223B;
     }
 
     @media (max-width: 575.98px) {

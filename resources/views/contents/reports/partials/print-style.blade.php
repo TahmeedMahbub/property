@@ -19,7 +19,7 @@
     }
 
     .report-sheet .table thead th {
-        background: #1B8B5A;
+        background: #18223B;
         color: #fff;
         font-weight: 600;
         padding: .65rem .75rem;
@@ -38,7 +38,7 @@
 
     .report-sheet .table tfoot td {
         padding: .7rem .75rem;
-        border-top: 2px solid #1B8B5A;
+        border-top: 2px solid #18223B;
         background: #f0faf5;
     }
 
@@ -108,13 +108,13 @@
             align-items: flex-start;
             padding-bottom: 1rem;
             margin-bottom: 1rem;
-            border-bottom: 2px solid #1B8B5A;
+            border-bottom: 2px solid #18223B;
         }
 
         .report-print-header .rph-brand h2 {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1B8B5A;
+            color: #18223B;
             margin: 0 0 .25rem;
         }
 
@@ -170,7 +170,7 @@
         }
 
         .report-sheet .table thead th {
-            background: #1B8B5A !important;
+            background: #18223B !important;
             color: #fff !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
@@ -191,7 +191,7 @@
             background: #f0faf5 !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
-            border-top: 2px solid #1B8B5A !important;
+            border-top: 2px solid #18223B !important;
         }
 
         /* Print footer */
@@ -229,7 +229,7 @@
         }
 
         /* Status colors */
-        .text-success { color: #1B8B5A !important; }
+        .text-success { color: #18223B !important; }
         .text-danger { color: #d9534f !important; }
         .text-primary { color: #3b7ddd !important; }
     }

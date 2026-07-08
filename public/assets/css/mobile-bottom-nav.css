@@ -4,8 +4,8 @@
  */
 
 :root {
-  --hk-mnav-accent: #1b8b5a;
-  --hk-mnav-accent-2: #29875e;
+  --hk-mnav-accent: #18223B;
+  --hk-mnav-accent-2: #1e2d4d;
   --hk-mnav-inactive: #6b7a8d;
   --hk-mnav-bg: #ffffff;
   --hk-mnav-height: 64px;
@@ -267,7 +267,7 @@
     width: 8px;
     height: 8px;
     padding: 0;
-    border: 1.5px solid var(--hk-navbar-bg, #1b8b5a);
+    border: 1.5px solid var(--hk-navbar-bg, #18223B);
   }
 
   /* ───────────────────────── Notifications dropdown (mobile) ─────────────────────────

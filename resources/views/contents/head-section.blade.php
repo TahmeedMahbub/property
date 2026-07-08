@@ -48,8 +48,8 @@
 <!-- Custom navbar theme: dark background with light text -->
 <style>
     :root {
-        --hk-navbar-bg: #1B8B5A;
-        --hk-navbar-bg-2: #29875e;
+        --hk-navbar-bg: #18223B;
+        --hk-navbar-bg-2: #1e2d4d;
         --hk-navbar-text: #e7e7f0;
         --hk-navbar-muted: #b4b4cc;
     }
@@ -121,11 +121,11 @@
        Custom sidebar theme: clean white/light menu with brand accents
        =============================================================== */
     :root {
-        --hk-menu-bg: #effaef;
+        --hk-menu-bg: #ebf0f9;
         --hk-menu-text: #2f3a45;
         --hk-menu-muted: #566373;
-        --hk-menu-brand: #1B8B5A;
-        --hk-menu-brand-soft: rgba(27, 139, 90, 0.10);
+        --hk-menu-brand: #18223B;
+        --hk-menu-brand-soft: rgba(24, 34, 59, 0.10);
         --hk-menu-accent: #F4A300;
     }
 
@@ -154,7 +154,7 @@
     }
 
     #layout-menu .app-brand .app-brand-logo img {
-        box-shadow: 0 4px 12px rgba(27, 139, 90, 0.18);
+        box-shadow: 0 4px 12px rgba(24, 34, 59, 0.18);
     }
 
     /* Menu inner shadow (top fade) tuned for light bg */
@@ -196,7 +196,7 @@
 
     /* Active top-level item: brand pill with accent bar */
     #layout-menu .menu-inner > .menu-item.active > .menu-link {
-        background: linear-gradient(90deg, rgba(27, 139, 90, 0.16), rgba(27, 139, 90, 0.06)) !important;
+        background: linear-gradient(90deg, rgba(24, 34, 59, 0.16), rgba(24, 34, 59, 0.06)) !important;
         color: var(--hk-menu-brand) !important;
         font-weight: 600;
         box-shadow: inset 3px 0 0 var(--hk-menu-accent);
@@ -252,7 +252,7 @@
     /* Custom scrollbar */
     #layout-menu .ps__thumb-y,
     #layout-menu .ps__rail-y.ps--clicking .ps__thumb-y {
-        background: rgba(27, 139, 90, 0.35) !important;
+        background: rgba(24, 34, 59, 0.35) !important;
         width: 5px !important;
     }
 
@@ -260,9 +260,9 @@
        Brand primary buttons: vibrant, eye-catching green
        =============================================================== */
     :root {
-        --hk-btn: #1B8B5A;
-        --hk-btn-2: #23a86c;
-        --hk-btn-dark: #136642;
+        --hk-btn: #18223B;
+        --hk-btn-2: #2a3f66;
+        --hk-btn-dark: #0f1628;
     }
 
     .btn-primary {
@@ -276,7 +276,7 @@
         --bs-btn-disabled-border-color: var(--hk-btn);
         background: linear-gradient(135deg, var(--hk-btn-2) 0%, var(--hk-btn) 100%) !important;
         border-color: var(--hk-btn) !important;
-        box-shadow: 0 4px 14px rgba(27, 139, 90, 0.30);
+        box-shadow: 0 4px 14px rgba(24, 34, 59, 0.30);
         font-weight: 600;
         transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
     }
@@ -284,7 +284,7 @@
     .btn-primary:hover {
         background: linear-gradient(135deg, var(--hk-btn) 0%, var(--hk-btn-dark) 100%) !important;
         border-color: var(--hk-btn-dark) !important;
-        box-shadow: 0 8px 22px rgba(27, 139, 90, 0.38);
+        box-shadow: 0 8px 22px rgba(24, 34, 59, 0.38);
         transform: translateY(-1px);
         filter: brightness(1.02);
     }
@@ -295,7 +295,7 @@
     .show > .btn-primary.dropdown-toggle {
         background: var(--hk-btn-dark) !important;
         border-color: var(--hk-btn-dark) !important;
-        box-shadow: 0 0 0 0.2rem rgba(27, 139, 90, 0.25) !important;
+        box-shadow: 0 0 0 0.2rem rgba(24, 34, 59, 0.25) !important;
     }
 
     .btn-primary:disabled,
@@ -312,7 +312,7 @@
         --bs-btn-hover-border-color: var(--hk-btn);
         --bs-btn-active-bg: var(--hk-btn);
         --bs-btn-active-border-color: var(--hk-btn);
-        --bs-btn-focus-shadow-rgb: 27, 139, 90;
+        --bs-btn-focus-shadow-rgb: 24, 34, 59;
         color: var(--hk-btn);
         border-color: var(--hk-btn);
         font-weight: 600;
@@ -334,14 +334,14 @@
     /* Navbar "Sell" button: white pill, amber icon, hover lift */
     .hk-sell-btn {
         background: #fff !important;
-        color: #1B8B5A !important;
+        color: #18223B !important;
         border: none !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
         transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease;
     }
 
     .hk-sell-btn i {
-        color: #1B8B5A !important;
+        color: #18223B !important;
         transition: transform .15s ease;
     }
 
@@ -359,7 +359,7 @@
 
     /* Beat the navbar's global "#layout-navbar i" rule for the Sell button */
     #layout-navbar .hk-sell-btn i {
-        color: #1B8B5A !important;
+        color: #18223B !important;
     }
 
     #layout-navbar .hk-sell-btn:hover i {

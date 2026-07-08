@@ -11,7 +11,7 @@
         {{-- App name --}}
         <div class="navbar-nav align-items-center">
             <a href="{{ url('/dashboard') }}" class="fw-medium text-heading text-decoration-none hk-topbar-title">
-                {{ config('app.name') }}
+                {{ app()->bound('currentCompany') && app('currentCompany') ? app('currentCompany')->name : config('app.name') }}
             </a>
         </div>
 
