@@ -87,6 +87,11 @@ class Company extends Model
         return $this->hasMany(Loan::class);
     }
 
+    public function plots(): HasMany
+    {
+        return $this->hasMany(Plot::class);
+    }
+
     public function unitTypes(): HasMany
     {
         return $this->hasMany(UnitType::class);

@@ -38,6 +38,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'Manage Loans', 'slug' => 'loans.manage', 'group' => 'loans'],
             ['name' => 'Delete Loans', 'slug' => 'loans.delete', 'group' => 'loans'],
 
+            // Plots (land acquisition)
+            ['name' => 'View Plots', 'slug' => 'plots.view', 'group' => 'plots'],
+            ['name' => 'Manage Plots', 'slug' => 'plots.manage', 'group' => 'plots'],
+            ['name' => 'Delete Plots', 'slug' => 'plots.delete', 'group' => 'plots'],
+
             // Employees
             ['name' => 'View Employees', 'slug' => 'employees.view', 'group' => 'employees'],
             ['name' => 'Manage Employees', 'slug' => 'employees.manage', 'group' => 'employees'],

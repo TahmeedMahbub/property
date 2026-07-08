@@ -122,6 +122,66 @@
         </div>
     </div>
 
+    {{-- Plot / Land Acquisition Overview --}}
+    @if ($plotMetrics && $plotMetrics['total_plots'] > 0)
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0">Land Acquisition Overview</h5>
+                <a href="{{ url('/plots') }}" class="btn btn-sm btn-outline-primary">Manage Plots</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded bg-label-primary text-center">
+                            <h5 class="fw-bold mb-1">{{ number_format($plotMetrics['total_plots']) }}</h5>
+                            <small>Total Plots</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded bg-label-info text-center">
+                            <h5 class="fw-bold mb-1">{{ rtrim(rtrim(number_format($plotMetrics['total_land_katha'], 2), '0'), '.') }}</h5>
+                            <small>Land (katha)</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded bg-label-warning text-center">
+                            <h5 class="fw-bold mb-1">৳{{ number_format($plotMetrics['total_acquisition_cost'], 0) }}</h5>
+                            <small>Acquisition Cost</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 rounded bg-label-danger text-center">
+                            <h5 class="fw-bold mb-1">৳{{ number_format($plotMetrics['total_due'], 0) }}</h5>
+                            <small>Total Due</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3 mt-1">
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 rounded bg-label-success text-center">
+                            <h6 class="fw-bold mb-1">৳{{ number_format($plotMetrics['total_paid'], 0) }}</h6>
+                            <small>Total Paid</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 rounded bg-label-secondary text-center">
+                            <h6 class="fw-bold mb-1">{{ number_format($plotMetrics['bayna_pending']) }}</h6>
+                            <small>Bayna Pending</small>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="p-3 rounded bg-label-secondary text-center">
+                            <h6 class="fw-bold mb-1">{{ number_format($plotMetrics['registration_pending']) }}</h6>
+                            <small>Registration Pending</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Loan Overview --}}
     @if ($loanMetrics && $loanMetrics['loan_count'] > 0)
     <div class="col-12">

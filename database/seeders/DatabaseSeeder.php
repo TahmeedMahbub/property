@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PlatformSeeder::class,
             LoanSeeder::class,
+            PlotSeeder::class,
         ]);
     }
 }

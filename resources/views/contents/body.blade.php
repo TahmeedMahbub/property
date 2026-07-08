@@ -34,5 +34,6 @@
         @include('contents.mobile-bottom-nav')
         @include('contents.partials.global-modal')
         @include('contents.end-section')
+        @stack('scripts')
     </body>
 </html>

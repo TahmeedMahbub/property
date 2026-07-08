@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Domains\Loan\Services\LoanReportService;
+use App\Domains\Plot\Services\PlotReportService;
 use App\Http\Controllers\Controller;
 use App\Models\Journal;
 use App\Models\Unit;
@@ -19,7 +20,11 @@ class DashboardController extends Controller
             ? (new LoanReportService())->companyMetrics($company->id)
             : null;
 
-        return view('contents.property.dashboard', compact('company', 'loanMetrics'));
+        $plotMetrics = $company
+            ? (new PlotReportService())->companyMetrics($company->id)
+            : null;
+
+        return view('contents.property.dashboard', compact('company', 'loanMetrics', 'plotMetrics'));
     }
 
     public function stats(): JsonResponse

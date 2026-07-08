@@ -11,6 +11,10 @@ use App\Http\Controllers\Web\LoanController;
 use App\Http\Controllers\Web\LoanReportController;
 use App\Http\Controllers\Web\LoanRepaymentController;
 use App\Http\Controllers\Web\MemberController;
+use App\Http\Controllers\Web\PlotController;
+use App\Http\Controllers\Web\PlotDocumentController;
+use App\Http\Controllers\Web\PlotPaymentController;
+use App\Http\Controllers\Web\PlotReportController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ProjectController;
 use App\Http\Controllers\Web\ShareholderController;
@@ -83,6 +87,16 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     // Investors
     Route::resource('investors', InvestorController::class)->except(['show']);
     Route::resource('customers', CustomerController::class)->except(['show']);
+
+    // Plots (land acquisition)
+    Route::get('/plots/reports', [PlotReportController::class, 'index'])->name('plots.reports');
+    Route::get('/plots/reports/{type}', [PlotReportController::class, 'show'])->name('plots.reports.show');
+    Route::get('/plots/{plot}/payments/create', [PlotPaymentController::class, 'create'])->name('plots.payments.create');
+    Route::post('/plots/{plot}/payments', [PlotPaymentController::class, 'store'])->name('plots.payments.store');
+    Route::delete('/plots/{plot}/payments/{payment}', [PlotPaymentController::class, 'destroy'])->name('plots.payments.destroy');
+    Route::post('/plots/{plot}/documents', [PlotDocumentController::class, 'store'])->name('plots.documents.store');
+    Route::delete('/plots/{plot}/documents/{document}', [PlotDocumentController::class, 'destroy'])->name('plots.documents.destroy');
+    Route::resource('plots', PlotController::class);
 
     // Loans
     Route::get('/loans/reports', [LoanReportController::class, 'index'])->name('loans.reports');

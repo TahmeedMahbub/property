@@ -44,7 +44,7 @@ class RoleSeeder extends Seeder
 
         // Member gets view + create/upload
         $memberPermissions = Permission::where('slug', 'like', '%.view')
-            ->orWhereIn('slug', ['projects.create', 'documents.upload', 'properties.manage'])
+            ->orWhereIn('slug', ['projects.create', 'documents.upload', 'properties.manage', 'plots.manage'])
             ->pluck('id');
         $member->permissions()->sync($memberPermissions);
 
