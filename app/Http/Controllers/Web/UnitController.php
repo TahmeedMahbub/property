@@ -7,6 +7,7 @@ use App\Models\Building;
 use App\Models\Floor;
 use App\Models\Unit;
 use App\Models\UnitType;
+use App\Services\JournalService;
 use Illuminate\Http\Request;
 
 class UnitController extends Controller
@@ -90,7 +91,16 @@ class UnitController extends Controller
         $validated['project_id'] = $floor->project_id;
         $validated['building_id'] = $floor->building_id;
 
-        $floor->units()->create($validated);
+        $unit = $floor->units()->create($validated);
+
+        // A sold/handovered unit brings in its sale price (credit)
+        JournalService::syncReference(
+            companyId: $company->id,
+            reference: $unit,
+            targetCredit: in_array($unit->status, ['sold', 'handovered']) ? (float) ($unit->price ?? 0) : 0.0,
+            category: 'unit_sale',
+            remarks: 'Unit ' . $unit->unit_number . ' sale',
+        );
 
         return redirect('/units')->with('success', 'Unit created successfully.');
     }
@@ -124,11 +134,28 @@ class UnitController extends Controller
 
         $unit->update($validated);
 
+        // Sync ledger: credit sale price when sold/handovered, otherwise reverse
+        JournalService::syncReference(
+            companyId: $unit->company_id,
+            reference: $unit,
+            targetCredit: in_array($unit->status, ['sold', 'handovered']) ? (float) ($unit->price ?? 0) : 0.0,
+            category: 'unit_sale',
+            remarks: 'Unit ' . $unit->unit_number . ' status: ' . $unit->status,
+        );
+
         return redirect('/units')->with('success', 'Unit updated successfully.');
     }
 
     public function destroy(Unit $unit)
     {
+        // Reverse any sale contribution before deleting
+        JournalService::reverseReference(
+            companyId: $unit->company_id,
+            reference: $unit,
+            category: 'unit_sale',
+            remarks: 'Reversal: unit ' . $unit->unit_number . ' removed',
+        );
+
         $unit->delete();
         return redirect('/units')->with('success', 'Unit deleted successfully.');
     }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Shareholder;
+use App\Services\JournalService;
 use Illuminate\Http\Request;
 
 class ShareholderController extends Controller
@@ -46,7 +47,16 @@ class ShareholderController extends Controller
 
         $validated['company_id'] = $company->id;
 
-        Shareholder::create($validated);
+        $shareholder = Shareholder::create($validated);
+
+        // Record share capital as money-in (credit)
+        JournalService::syncReference(
+            companyId: $company->id,
+            reference: $shareholder,
+            targetCredit: (float) ($shareholder->share_amount ?? 0),
+            category: 'shareholder_investment',
+            remarks: 'Share capital from ' . $shareholder->name,
+        );
 
         return redirect('/shareholders')->with('success', 'Shareholder added successfully.');
     }
@@ -80,6 +90,15 @@ class ShareholderController extends Controller
 
         $shareholder->update($validated);
 
+        // Keep the ledger in sync with the (possibly changed) share amount
+        JournalService::syncReference(
+            companyId: $company->id,
+            reference: $shareholder,
+            targetCredit: (float) ($shareholder->share_amount ?? 0),
+            category: 'shareholder_investment',
+            remarks: 'Share capital adjustment for ' . $shareholder->name,
+        );
+
         return redirect('/shareholders')->with('success', 'Shareholder updated successfully.');
     }
 
@@ -88,6 +107,14 @@ class ShareholderController extends Controller
         $company = app('currentCompany');
         $shareholder = Shareholder::where('company_id', $company->id)
             ->where('uuid', $uuid)->firstOrFail();
+
+        // Reverse the share capital contribution before deleting
+        JournalService::reverseReference(
+            companyId: $company->id,
+            reference: $shareholder,
+            category: 'shareholder_investment',
+            remarks: 'Reversal: shareholder ' . $shareholder->name . ' removed',
+        );
 
         $shareholder->delete();
 

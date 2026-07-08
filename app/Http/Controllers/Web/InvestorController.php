@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectInvestor;
+use App\Services\JournalService;
 use Illuminate\Http\Request;
 
 class InvestorController extends Controller
@@ -62,7 +63,16 @@ class InvestorController extends Controller
         $project = $company->projects()->where('uuid', $validated['project_id'])->firstOrFail();
         $validated['project_id'] = $project->id;
 
-        ProjectInvestor::create($validated);
+        $investor = ProjectInvestor::create($validated);
+
+        // Record investment as money-in (credit)
+        JournalService::syncReference(
+            companyId: $company->id,
+            reference: $investor,
+            targetCredit: (float) ($investor->investment_amount ?? 0),
+            category: 'investment',
+            remarks: 'Investment from ' . $investor->name . ' (' . $project->name . ')',
+        );
 
         return redirect('/investors')->with('success', 'Investor added successfully.');
     }
@@ -101,6 +111,15 @@ class InvestorController extends Controller
 
         $investor->update($validated);
 
+        // Keep the ledger in sync with the (possibly changed) investment amount
+        JournalService::syncReference(
+            companyId: $company->id,
+            reference: $investor,
+            targetCredit: (float) ($investor->investment_amount ?? 0),
+            category: 'investment',
+            remarks: 'Investment adjustment for ' . $investor->name,
+        );
+
         return redirect('/investors')->with('success', 'Investor updated successfully.');
     }
 
@@ -110,6 +129,14 @@ class InvestorController extends Controller
         $projectIds = $company->projects()->pluck('id');
         $investor = ProjectInvestor::whereIn('project_id', $projectIds)
             ->where('uuid', $uuid)->firstOrFail();
+
+        // Reverse the investment contribution before deleting
+        JournalService::reverseReference(
+            companyId: $company->id,
+            reference: $investor,
+            category: 'investment',
+            remarks: 'Reversal: investor ' . $investor->name . ' removed',
+        );
 
         $investor->delete();
 
