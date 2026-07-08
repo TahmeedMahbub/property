@@ -6,9 +6,9 @@
     {{-- Auth (login / register) page styling --}}
     <style>
         :root {
-            --hk-auth-brand: #1B8B5A;
-            --hk-auth-brand-2: #29875e;
-            --hk-auth-brand-soft: rgba(27, 139, 90, 0.08);
+            --hk-auth-brand: #18223B;
+            --hk-auth-brand-2: #1e2d4d;
+            --hk-auth-brand-soft: rgba(24, 34, 59, 0.08);
         }
 
         .hk-auth-wrapper {
@@ -108,7 +108,7 @@
             border: none;
             padding-block: .65rem;
             font-weight: 600;
-            box-shadow: 0 8px 18px rgba(27, 139, 90, .25);
+            box-shadow: 0 8px 18px rgba(24, 34, 59, .25);
         }
 
         .hk-auth-card .btn-primary:hover {

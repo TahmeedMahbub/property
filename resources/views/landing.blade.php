@@ -1,5 +1,6 @@
 @php($seo = $seo ?? \App\Support\LandingSeo::make(request()))
 @php($lang = $seo['lang'] ?? 'bn')
+@php(app()->setLocale($lang))
 <!DOCTYPE html>
 <html lang="{{ $seo['htmlLocale'] }}" dir="ltr">
 <head>
@@ -108,8 +109,8 @@ nav{position:sticky;top:0;z-index:999;background:rgba(255,255,255,.97);backdrop-
 .hero-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:40px}
 .hero .btn-primary{background:var(--accent);box-shadow:0 4px 16px rgba(245,158,11,.3)}
 .hero .btn-primary:hover{background:var(--accent-dark)}
-.hero .btn-secondary{border-color:rgba(255,255,255,.3);color:#fff}
-.hero .btn-secondary:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.5)}
+.hero .btn-secondary{border-color:rgba(255,255,255,.3);color:#fff;background:transparent}
+.hero .btn-secondary:hover{background:#fff;color:var(--primary);border-color:#fff}
 .hero-stats{display:flex;gap:30px;flex-wrap:wrap}
 .hero-stat{text-align:center}
 .hero-stat .num{font-size:1.8rem;font-weight:800;color:#fff}
@@ -248,27 +249,35 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
   <div class="nav-inner">
     <a href="/" class="logo">
       <span class="logo-mark"><span class="material-icons-round">apartment</span></span>
-      {{ $lang === 'bn' ? 'হিসাবিজ প্রপার্টি' : 'Hishabiz Property' }}
+      {{ t('property_landing.brand') }}
     </a>
     <div class="nav-links">
-      <a href="#features">{{ $lang === 'bn' ? 'ফিচার' : 'Features' }}</a>
-      <a href="#pricing">{{ $lang === 'bn' ? 'মূল্য' : 'Pricing' }}</a>
-      <a href="#faq">{{ $lang === 'bn' ? 'জিজ্ঞাসা' : 'FAQ' }}</a>
-      <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch">{{ $lang === 'bn' ? 'EN' : 'বাং' }}</a>
-      <a href="/login" class="btn-nav">{{ $lang === 'bn' ? 'লগইন' : 'Login' }}</a>
-      <a href="/register" class="btn-nav-cta">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+      <a href="#features">{{ t('property_landing.nav_features') }}</a>
+      <a href="#pricing">{{ t('property_landing.nav_pricing') }}</a>
+      <a href="#faq">{{ t('property_landing.nav_faq') }}</a>
+      <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch">{{ t('property_landing.lang_switch') }}</a>
+      @guest
+      <a href="/login" class="btn-nav">{{ t('property_landing.nav_login') }}</a>
+      <a href="/register" class="btn-nav-cta">{{ t('property_landing.nav_start_free') }}</a>
+      @else
+      <a href="/dashboard" class="btn-nav-cta">{{ t('property_landing.nav_dashboard') }}</a>
+      @endguest
     </div>
     <button class="hamburger" onclick="document.querySelector('.mobile-menu').classList.toggle('active')" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
   </div>
   <div class="mobile-menu">
-    <a href="#features">{{ $lang === 'bn' ? 'ফিচার' : 'Features' }}</a>
-    <a href="#pricing">{{ $lang === 'bn' ? 'মূল্য' : 'Pricing' }}</a>
-    <a href="#faq">{{ $lang === 'bn' ? 'জিজ্ঞাসা' : 'FAQ' }}</a>
-    <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch" style="margin:8px 16px;width:fit-content">{{ $lang === 'bn' ? 'EN' : 'বাং' }}</a>
-    <a href="/login" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;border:2px solid var(--primary);font-weight:600;color:var(--primary)">{{ $lang === 'bn' ? 'লগইন' : 'Login' }}</a>
-    <a href="/register" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+    <a href="#features">{{ t('property_landing.nav_features') }}</a>
+    <a href="#pricing">{{ t('property_landing.nav_pricing') }}</a>
+    <a href="#faq">{{ t('property_landing.nav_faq') }}</a>
+    <a href="?lang={{ $lang === 'bn' ? 'en' : 'bn' }}" class="lang-switch" style="margin:8px 16px;width:fit-content">{{ t('property_landing.lang_switch') }}</a>
+    @guest
+    <a href="/login" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;border:2px solid var(--primary);font-weight:600;color:var(--primary)">{{ t('property_landing.nav_login') }}</a>
+    <a href="/register" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600">{{ t('property_landing.nav_start_free') }}</a>
+    @else
+    <a href="/dashboard" style="margin:4px 16px;width:fit-content;padding:10px 20px;border-radius:8px;background:var(--primary);color:#fff;font-weight:600">{{ t('property_landing.nav_dashboard') }}</a>
+    @endguest
   </div>
 </nav>
 
@@ -276,36 +285,28 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <section class="hero">
   <div class="hero-inner">
     <div>
-      <div class="hero-badge"><span class="dot"></span>{{ $lang === 'bn' ? 'বাংলাদেশের #১ প্রপার্টি সফটওয়্যার' : '#1 Property Software in Bangladesh' }}</div>
-      <h1>
-        @if($lang === 'bn')
-          আপনার <span class="highlight">রিয়েল এস্টেট</span> ব্যবসা এখন সম্পূর্ণ ডিজিটাল
-        @else
-          Your <span class="highlight">Real Estate</span> Business, Fully Digital
-        @endif
-      </h1>
-      <p class="hero-sub">
-        @if($lang === 'bn')
-          প্রজেক্ট, বিল্ডিং, ফ্লোর, ইউনিট, বিনিয়োগকারী, গ্রাহক — সবকিছু এক ড্যাশবোর্ডে। সহজে পরিচালনা করুন, দ্রুত সিদ্ধান্ত নিন।
-        @else
-          Projects, buildings, floors, units, investors, customers — everything in one dashboard. Manage easily, decide faster.
-        @endif
-      </p>
+      <div class="hero-badge"><span class="dot"></span>{{ t('property_landing.hero_badge') }}</div>
+      <h1>{{ t('property_landing.hero_title_pre') }}<span class="highlight">{{ t('property_landing.hero_title_highlight') }}</span>{{ t('property_landing.hero_title_post') }}</h1>
+      <p class="hero-sub">{{ t('property_landing.hero_sub') }}</p>
       <div class="hero-btns">
-        <a href="/register" class="btn-primary">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start For Free' }} <span class="material-icons-round">arrow_forward</span></a>
-        <a href="/login" class="btn-secondary">{{ $lang === 'bn' ? 'ফিচার দেখুন' : 'See Features' }}</a>
+        @guest
+        <a href="/register" class="btn-primary">{{ t('property_landing.hero_cta') }} <span class="material-icons-round">arrow_forward</span></a>
+        <a href="/login" class="btn-secondary">{{ t('property_landing.hero_login') }}</a>
+        @else
+        <a href="/dashboard" class="btn-primary">{{ t('property_landing.hero_go_dashboard') }} <span class="material-icons-round">arrow_forward</span></a>
+        @endguest
       </div>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="num">{{ $lang === 'bn' ? '৫০০+' : '500+' }}</div><div class="label">{{ $lang === 'bn' ? 'সক্রিয় কোম্পানি' : 'Active Companies' }}</div></div>
-        <div class="hero-stat"><div class="num">{{ $lang === 'bn' ? '১২,০০০+' : '12,000+' }}</div><div class="label">{{ $lang === 'bn' ? 'ইউনিট পরিচালিত' : 'Units Managed' }}</div></div>
-        <div class="hero-stat"><div class="num">{{ $lang === 'bn' ? '৯৯.৯%' : '99.9%' }}</div><div class="label">{{ $lang === 'bn' ? 'আপটাইম' : 'Uptime' }}</div></div>
+        <div class="hero-stat"><div class="num">{{ t('property_landing.stat_companies') }}</div><div class="label">{{ t('property_landing.stat_companies_label') }}</div></div>
+        <div class="hero-stat"><div class="num">{{ t('property_landing.stat_units') }}</div><div class="label">{{ t('property_landing.stat_units_label') }}</div></div>
+        <div class="hero-stat"><div class="num">{{ t('property_landing.stat_uptime') }}</div><div class="label">{{ t('property_landing.stat_uptime_label') }}</div></div>
       </div>
     </div>
     <div class="hero-visual">
       <div class="hero-mockup">
         <div class="hero-mockup-placeholder">
           <span class="material-icons-round">dashboard</span>
-          {{ $lang === 'bn' ? 'ড্যাশবোর্ড প্রিভিউ' : 'Dashboard Preview' }}
+          {{ t('property_landing.dashboard_preview') }}
         </div>
       </div>
     </div>
@@ -315,29 +316,20 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <!-- FEATURES -->
 <section id="features" class="section-bg">
   <div class="section-inner text-center">
-    <div class="section-tag"><span class="material-icons-round">auto_awesome</span>{{ $lang === 'bn' ? 'ফিচারসমূহ' : 'Features' }}</div>
-    <h2 class="section-title">{{ $lang === 'bn' ? 'সব কিছু এক প্ল্যাটফর্মে' : 'Everything in One Platform' }}</h2>
-    <p class="section-sub">{{ $lang === 'bn' ? 'প্রপার্টি ব্যবসা পরিচালনার জন্য যা যা দরকার, সব এখানে।' : 'Everything you need to manage your property business.' }}</p>
+    <div class="section-tag"><span class="material-icons-round">auto_awesome</span>{{ t('property_landing.features_tag') }}</div>
+    <h2 class="section-title">{{ t('property_landing.features_title') }}</h2>
+    <p class="section-sub">{{ t('property_landing.features_sub') }}</p>
   </div>
   <div class="section-inner">
     <div class="features-grid">
-      <?php
-      $features = $lang === 'bn' ? [
-        ['icon'=>'domain','title'=>'প্রজেক্ট ম্যানেজমেন্ট','desc'=>'একাধিক প্রজেক্ট তৈরি, ট্র্যাক ও পরিচালনা করুন। বাজেট, টাইমলাইন, স্ট্যাটাস সব দেখুন এক জায়গায়।'],
-        ['icon'=>'apartment','title'=>'বিল্ডিং ও ফ্লোর','desc'=>'প্রতিটি প্রজেক্টে বিল্ডিং, ফ্লোর, এবং ইউনিট যোগ করুন। হায়ারার্কি মেইনটেইন করুন সহজে।'],
-        ['icon'=>'home_work','title'=>'ইউনিট ট্র্যাকিং','desc'=>'প্রতিটি ইউনিটের সাইজ, দাম, স্ট্যাটাস (Available, Booked, Sold) ট্র্যাক করুন রিয়েল-টাইমে।'],
-        ['icon'=>'people','title'=>'বিনিয়োগকারী ব্যবস্থাপনা','desc'=>'প্রজেক্টভিত্তিক বিনিয়োগকারী, বিনিয়োগের পরিমাণ, শেয়ার পার্সেন্টেজ সহজেই পরিচালনা করুন।'],
-        ['icon'=>'person_search','title'=>'গ্রাহক ডেটাবেজ','desc'=>'সব গ্রাহকের তথ্য, ক্রেডিট লিমিট, যোগাযোগ সংরক্ষণ করুন। Individual ও Business দুই ধরনেই।'],
-        ['icon'=>'description','title'=>'ডকুমেন্ট ম্যানেজমেন্ট','desc'=>'ফোল্ডার, ক্যাটাগরি ভিত্তিক ডকুমেন্ট আপলোড ও ভার্সন কন্ট্রোল। প্রতিটি এন্টিটির সাথে সংযুক্ত।'],
-      ] : [
-        ['icon'=>'domain','title'=>'Project Management','desc'=>'Create, track, and manage multiple projects. View budgets, timelines, and status all in one place.'],
-        ['icon'=>'apartment','title'=>'Buildings & Floors','desc'=>'Add buildings, floors, and units to each project. Maintain hierarchy effortlessly.'],
-        ['icon'=>'home_work','title'=>'Unit Tracking','desc'=>'Track each unit size, price, and status (Available, Booked, Sold) in real-time.'],
-        ['icon'=>'people','title'=>'Investor Management','desc'=>'Manage project-based investors, investment amounts, and share percentages easily.'],
-        ['icon'=>'person_search','title'=>'Customer Database','desc'=>'Store all customer info, credit limits, contacts. Supports both Individual and Business types.'],
-        ['icon'=>'description','title'=>'Document Management','desc'=>'Upload documents with folder/category structure and version control. Attach to any entity.'],
-      ];
-      ?>
+      @php($features = [
+        ['icon'=>'domain','title'=>t('property_landing.feat_project_title'),'desc'=>t('property_landing.feat_project_desc')],
+        ['icon'=>'apartment','title'=>t('property_landing.feat_building_title'),'desc'=>t('property_landing.feat_building_desc')],
+        ['icon'=>'home_work','title'=>t('property_landing.feat_unit_title'),'desc'=>t('property_landing.feat_unit_desc')],
+        ['icon'=>'people','title'=>t('property_landing.feat_investor_title'),'desc'=>t('property_landing.feat_investor_desc')],
+        ['icon'=>'person_search','title'=>t('property_landing.feat_customer_title'),'desc'=>t('property_landing.feat_customer_desc')],
+        ['icon'=>'description','title'=>t('property_landing.feat_document_title'),'desc'=>t('property_landing.feat_document_desc')],
+      ])
       @foreach($features as $f)
       <div class="feature-card">
         <div class="feat-icon"><span class="material-icons-round">{{ $f['icon'] }}</span></div>
@@ -352,23 +344,23 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <!-- HOW IT WORKS -->
 <section>
   <div class="section-inner text-center">
-    <div class="section-tag"><span class="material-icons-round">route</span>{{ $lang === 'bn' ? 'কিভাবে কাজ করে' : 'How It Works' }}</div>
-    <h2 class="section-title">{{ $lang === 'bn' ? '৩ ধাপে শুরু করুন' : 'Get Started in 3 Steps' }}</h2>
-    <p class="section-sub">{{ $lang === 'bn' ? 'মাত্র কয়েক মিনিটে আপনার প্রপার্টি ব্যবসা ডিজিটাল করুন।' : 'Digitize your property business in just a few minutes.' }}</p>
+    <div class="section-tag"><span class="material-icons-round">route</span>{{ t('property_landing.how_tag') }}</div>
+    <h2 class="section-title">{{ t('property_landing.how_title') }}</h2>
+    <p class="section-sub">{{ t('property_landing.how_sub') }}</p>
   </div>
   <div class="section-inner">
     <div class="steps">
       <div class="step">
-        <h4>{{ $lang === 'bn' ? 'অ্যাকাউন্ট তৈরি করুন' : 'Create Account' }}</h4>
-        <p>{{ $lang === 'bn' ? 'ফ্রি রেজিস্ট্রেশন করুন। কোনো ক্রেডিট কার্ড লাগবে না।' : 'Register for free. No credit card required.' }}</p>
+        <h4>{{ t('property_landing.step1_title') }}</h4>
+        <p>{{ t('property_landing.step1_desc') }}</p>
       </div>
       <div class="step">
-        <h4>{{ $lang === 'bn' ? 'কোম্পানি ও প্রজেক্ট সেটআপ' : 'Setup Company & Project' }}</h4>
-        <p>{{ $lang === 'bn' ? 'আপনার কোম্পানি তৈরি করুন, প্রজেক্ট যোগ করুন, বিল্ডিং ও ইউনিট সেটআপ করুন।' : 'Create your company, add projects, setup buildings & units.' }}</p>
+        <h4>{{ t('property_landing.step2_title') }}</h4>
+        <p>{{ t('property_landing.step2_desc') }}</p>
       </div>
       <div class="step">
-        <h4>{{ $lang === 'bn' ? 'ব্যবসা পরিচালনা শুরু' : 'Start Managing' }}</h4>
-        <p>{{ $lang === 'bn' ? 'গ্রাহক, বিনিয়োগকারী, বিক্রয় সব ট্র্যাক করুন এক ড্যাশবোর্ড থেকে।' : 'Track customers, investors, sales — all from one dashboard.' }}</p>
+        <h4>{{ t('property_landing.step3_title') }}</h4>
+        <p>{{ t('property_landing.step3_desc') }}</p>
       </div>
     </div>
   </div>
@@ -378,20 +370,20 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <section class="stats-section">
   <div class="stats-grid">
     <div class="stat-item">
-      <div class="stat-num">{{ $lang === 'bn' ? '৫০০+' : '500+' }}</div>
-      <div class="stat-label">{{ $lang === 'bn' ? 'সক্রিয় কোম্পানি' : 'Active Companies' }}</div>
+      <div class="stat-num">{{ t('property_landing.stats_companies') }}</div>
+      <div class="stat-label">{{ t('property_landing.stats_companies_label') }}</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">{{ $lang === 'bn' ? '২,৫০০+' : '2,500+' }}</div>
-      <div class="stat-label">{{ $lang === 'bn' ? 'প্রজেক্ট পরিচালিত' : 'Projects Managed' }}</div>
+      <div class="stat-num">{{ t('property_landing.stats_projects') }}</div>
+      <div class="stat-label">{{ t('property_landing.stats_projects_label') }}</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">{{ $lang === 'bn' ? '১২,০০০+' : '12,000+' }}</div>
-      <div class="stat-label">{{ $lang === 'bn' ? 'ইউনিট ট্র্যাকিং' : 'Units Tracked' }}</div>
+      <div class="stat-num">{{ t('property_landing.stats_units') }}</div>
+      <div class="stat-label">{{ t('property_landing.stats_units_label') }}</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num">{{ $lang === 'bn' ? '৳৫০০ কোটি+' : '৳500 Cr+' }}</div>
-      <div class="stat-label">{{ $lang === 'bn' ? 'সম্পত্তি মূল্য পরিচালিত' : 'Property Value Managed' }}</div>
+      <div class="stat-num">{{ t('property_landing.stats_value') }}</div>
+      <div class="stat-label">{{ t('property_landing.stats_value_label') }}</div>
     </div>
   </div>
 </section>
@@ -399,60 +391,60 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <!-- PRICING -->
 <section id="pricing">
   <div class="section-inner text-center">
-    <div class="section-tag"><span class="material-icons-round">sell</span>{{ $lang === 'bn' ? 'মূল্য পরিকল্পনা' : 'Pricing Plans' }}</div>
-    <h2 class="section-title">{{ $lang === 'bn' ? 'আপনার প্রয়োজন অনুযায়ী প্ল্যান বেছে নিন' : 'Choose the Plan That Fits You' }}</h2>
-    <p class="section-sub">{{ $lang === 'bn' ? 'ফ্রি দিয়ে শুরু করুন, যখন বাড়বে তখন আপগ্রেড করুন।' : 'Start free, upgrade when you grow.' }}</p>
+    <div class="section-tag"><span class="material-icons-round">sell</span>{{ t('property_landing.pricing_tag') }}</div>
+    <h2 class="section-title">{{ t('property_landing.pricing_title') }}</h2>
+    <p class="section-sub">{{ t('property_landing.pricing_sub') }}</p>
   </div>
   <div class="section-inner">
     <div class="pricing-grid">
       {{-- FREE --}}
       <div class="price-card">
-        <div class="price-name">{{ $lang === 'bn' ? 'ফ্রি' : 'Free' }}</div>
-        <div class="price-amount">{{ $lang === 'bn' ? '৳০' : '৳0' }} <span>/{{ $lang === 'bn' ? 'মাস' : 'mo' }}</span></div>
-        <div class="price-desc">{{ $lang === 'bn' ? 'ছোট ব্যবসার জন্য পারফেক্ট। সব বেসিক ফিচার ফ্রিতে।' : 'Perfect for small businesses. All basic features free.' }}</div>
+        <div class="price-name">{{ t('property_landing.plan_free') }}</div>
+        <div class="price-amount">{{ t('property_landing.plan_free_price') }} <span>/{{ t('property_landing.plan_per_month') }}</span></div>
+        <div class="price-desc">{{ t('property_landing.plan_free_desc') }}</div>
         <ul class="price-features">
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '১টি কোম্পানি' : '1 Company' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '২টি প্রজেক্ট' : '2 Projects' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '৫০টি ইউনিট' : '50 Units' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '৩ জন টিম মেম্বার' : '3 Team Members' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'বেসিক রিপোর্ট' : 'Basic Reports' }}</li>
-          <li class="disabled"><span class="material-icons-round">cancel</span>{{ $lang === 'bn' ? 'ডকুমেন্ট ম্যানেজমেন্ট' : 'Document Management' }}</li>
-          <li class="disabled"><span class="material-icons-round">cancel</span>{{ $lang === 'bn' ? 'API অ্যাক্সেস' : 'API Access' }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_1_company') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_2_projects') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_50_units') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_3_members') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_basic_reports') }}</li>
+          <li class="disabled"><span class="material-icons-round">cancel</span>{{ t('property_landing.plan_doc_mgmt') }}</li>
+          <li class="disabled"><span class="material-icons-round">cancel</span>{{ t('property_landing.plan_api') }}</li>
         </ul>
-        <a href="/register" class="btn-secondary">{{ $lang === 'bn' ? 'ফ্রি শুরু করুন' : 'Start Free' }}</a>
+        <a href="/register" class="btn-secondary">{{ t('property_landing.plan_start_free') }}</a>
       </div>
       {{-- PRO --}}
       <div class="price-card popular">
-        <span class="popular-badge">{{ $lang === 'bn' ? 'জনপ্রিয়' : 'Popular' }}</span>
-        <div class="price-name">{{ $lang === 'bn' ? 'প্রো' : 'Pro' }}</div>
-        <div class="price-amount">{{ $lang === 'bn' ? '৳৯৯৯' : '৳999' }} <span>/{{ $lang === 'bn' ? 'মাস' : 'mo' }}</span></div>
-        <div class="price-desc">{{ $lang === 'bn' ? 'বাড়তি ব্যবসার জন্য। সব ফিচার আনলিমিটেড।' : 'For growing businesses. All features unlimited.' }}</div>
+        <span class="popular-badge">{{ t('property_landing.plan_popular') }}</span>
+        <div class="price-name">{{ t('property_landing.plan_pro') }}</div>
+        <div class="price-amount">{{ t('property_landing.plan_pro_price') }} <span>/{{ t('property_landing.plan_per_month') }}</span></div>
+        <div class="price-desc">{{ t('property_landing.plan_pro_desc') }}</div>
         <ul class="price-features">
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '৫টি কোম্পানি' : '5 Companies' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'আনলিমিটেড প্রজেক্ট' : 'Unlimited Projects' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'আনলিমিটেড ইউনিট' : 'Unlimited Units' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? '১৫ জন টিম মেম্বার' : '15 Team Members' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'অ্যাডভান্সড রিপোর্ট' : 'Advanced Reports' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'ডকুমেন্ট ম্যানেজমেন্ট' : 'Document Management' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'ইমেইল সাপোর্ট' : 'Email Support' }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_5_companies') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_unlimited_projects') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_unlimited_units') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_15_members') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_adv_reports') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_doc_mgmt') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_email_support') }}</li>
         </ul>
-        <a href="/login" class="btn-primary">{{ $lang === 'bn' ? 'প্রো নিন' : 'Get Pro' }}</a>
+        <a href="/register" class="btn-primary">{{ t('property_landing.plan_get_pro') }}</a>
       </div>
       {{-- ENTERPRISE --}}
       <div class="price-card">
-        <div class="price-name">{{ $lang === 'bn' ? 'এন্টারপ্রাইজ' : 'Enterprise' }}</div>
-        <div class="price-amount">{{ $lang === 'bn' ? '৳২,৯৯৯' : '৳2,999' }} <span>/{{ $lang === 'bn' ? 'মাস' : 'mo' }}</span></div>
-        <div class="price-desc">{{ $lang === 'bn' ? 'বড় প্রতিষ্ঠানের জন্য কাস্টম সলিউশন।' : 'Custom solution for large organizations.' }}</div>
+        <div class="price-name">{{ t('property_landing.plan_enterprise') }}</div>
+        <div class="price-amount">{{ t('property_landing.plan_ent_price') }} <span>/{{ t('property_landing.plan_per_month') }}</span></div>
+        <div class="price-desc">{{ t('property_landing.plan_ent_desc') }}</div>
         <ul class="price-features">
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'আনলিমিটেড কোম্পানি' : 'Unlimited Companies' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'আনলিমিটেড সবকিছু' : 'Unlimited Everything' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'আনলিমিটেড টিম মেম্বার' : 'Unlimited Team Members' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'API অ্যাক্সেস' : 'API Access' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'কাস্টম ব্র্যান্ডিং' : 'Custom Branding' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'ডেডিকেটেড সাপোর্ট' : 'Dedicated Support' }}</li>
-          <li><span class="material-icons-round">check_circle</span>{{ $lang === 'bn' ? 'SLA গ্যারান্টি' : 'SLA Guarantee' }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_unlimited_companies') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_unlimited_all') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_unlimited_members') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_api') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_branding') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_dedicated_support') }}</li>
+          <li><span class="material-icons-round">check_circle</span>{{ t('property_landing.plan_sla') }}</li>
         </ul>
-        <a href="/login" class="btn-secondary">{{ $lang === 'bn' ? 'যোগাযোগ করুন' : 'Contact Us' }}</a>
+        <a href="/register" class="btn-secondary">{{ t('property_landing.plan_contact') }}</a>
       </div>
     </div>
   </div>
@@ -461,32 +453,26 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <!-- TESTIMONIALS -->
 <section class="section-bg">
   <div class="section-inner text-center">
-    <div class="section-tag"><span class="material-icons-round">format_quote</span>{{ $lang === 'bn' ? 'গ্রাহকদের মতামত' : 'Testimonials' }}</div>
-    <h2 class="section-title">{{ $lang === 'bn' ? 'তারা কি বলছেন' : 'What They Say' }}</h2>
-    <p class="section-sub">{{ $lang === 'bn' ? 'বাংলাদেশের শত শত প্রপার্টি ব্যবসা আমাদের ব্যবহার করছে।' : 'Hundreds of property businesses in Bangladesh trust us.' }}</p>
+    <div class="section-tag"><span class="material-icons-round">format_quote</span>{{ t('property_landing.testimonials_tag') }}</div>
+    <h2 class="section-title">{{ t('property_landing.testimonials_title') }}</h2>
+    <p class="section-sub">{{ t('property_landing.testimonials_sub') }}</p>
   </div>
   <div class="section-inner">
     <div class="testimonials-grid">
-      <?php
-      $testimonials = $lang === 'bn' ? [
-        ['text'=>'হিসাবিজ প্রপার্টি আমাদের পুরো ব্যবসাকে ডিজিটাল করেছে। আগে এক্সেলে হিসাব রাখতাম, এখন সব অটোমেটিক।','name'=>'মো. রহিম আহমেদ','role'=>'MD, রহিম কনস্ট্রাকশন','avatar'=>'র'],
-        ['text'=>'বিনিয়োগকারীদের তথ্য এবং ইউনিটের স্ট্যাটাস এখন ফোন থেকেই দেখতে পারি। অসাধারণ সফটওয়্যার!','name'=>'ফাতিমা বেগম','role'=>'ডিরেক্টর, গ্রীন হোমস','avatar'=>'ফ'],
-        ['text'=>'কাস্টমার সার্ভিস অসাম। যেকোনো সমস্যায় ২ ঘণ্টার মধ্যে সমাধান পাই। হাইলি রেকমেন্ড করি।','name'=>'কামাল হাসান','role'=>'CEO, হাসান প্রপার্টিজ','avatar'=>'ক'],
-      ] : [
-        ['text'=>'Hishabiz Property digitized our entire business. We used to track in Excel, now everything is automated.','name'=>'Rahim Ahmed','role'=>'MD, Rahim Construction','avatar'=>'R'],
-        ['text'=>'I can now check investor info and unit status from my phone. Amazing software!','name'=>'Fatima Begum','role'=>'Director, Green Homes','avatar'=>'F'],
-        ['text'=>'Customer service is awesome. Any issue gets resolved within 2 hours. Highly recommend.','name'=>'Kamal Hasan','role'=>'CEO, Hasan Properties','avatar'=>'K'],
-      ];
-      ?>
-      @foreach($testimonials as $t)
+      @php($testimonials = [
+        ['text'=>t('property_landing.testimonial_1_text'),'name'=>t('property_landing.testimonial_1_name'),'role'=>t('property_landing.testimonial_1_role'),'avatar'=>t('property_landing.testimonial_1_avatar')],
+        ['text'=>t('property_landing.testimonial_2_text'),'name'=>t('property_landing.testimonial_2_name'),'role'=>t('property_landing.testimonial_2_role'),'avatar'=>t('property_landing.testimonial_2_avatar')],
+        ['text'=>t('property_landing.testimonial_3_text'),'name'=>t('property_landing.testimonial_3_name'),'role'=>t('property_landing.testimonial_3_role'),'avatar'=>t('property_landing.testimonial_3_avatar')],
+      ])
+      @foreach($testimonials as $t_item)
       <div class="testimonial-card">
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"{{ $t['text'] }}"</p>
+        <p class="testimonial-text">"{{ $t_item['text'] }}"</p>
         <div class="testimonial-author">
-          <div class="testimonial-avatar">{{ $t['avatar'] }}</div>
+          <div class="testimonial-avatar">{{ $t_item['avatar'] }}</div>
           <div class="testimonial-info">
-            <h5>{{ $t['name'] }}</h5>
-            <p>{{ $t['role'] }}</p>
+            <h5>{{ $t_item['name'] }}</h5>
+            <p>{{ $t_item['role'] }}</p>
           </div>
         </div>
       </div>
@@ -498,26 +484,18 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 <!-- FAQ -->
 <section id="faq">
   <div class="section-inner text-center">
-    <div class="section-tag"><span class="material-icons-round">help</span>{{ $lang === 'bn' ? 'সচরাচর জিজ্ঞাসা' : 'FAQ' }}</div>
-    <h2 class="section-title">{{ $lang === 'bn' ? 'প্রশ্ন ও উত্তর' : 'Questions & Answers' }}</h2>
+    <div class="section-tag"><span class="material-icons-round">help</span>{{ t('property_landing.faq_tag') }}</div>
+    <h2 class="section-title">{{ t('property_landing.faq_title') }}</h2>
   </div>
   <div class="section-inner">
     <div class="faq-list">
-      <?php
-      $faqs = $lang === 'bn' ? [
-        ['q'=>'ফ্রি প্ল্যানে কি কোনো লিমিটেশন আছে?','a'=>'ফ্রি প্ল্যানে ১টি কোম্পানি, ২টি প্রজেক্ট এবং ৫০টি ইউনিট পর্যন্ত ব্যবহার করতে পারবেন। বেসিক রিপোর্ট এবং টিম ম্যানেজমেন্ট ফিচার অন্তর্ভুক্ত।'],
-        ['q'=>'আমি কি পরে প্ল্যান আপগ্রেড করতে পারব?','a'=>'অবশ্যই! যেকোনো সময় Pro বা Enterprise প্ল্যানে আপগ্রেড করতে পারবেন। আপনার ডেটা সম্পূর্ণ সুরক্ষিত থাকবে।'],
-        ['q'=>'ডেটা কি নিরাপদ?','a'=>'হ্যাঁ, আমরা SSL এনক্রিপশন, ডেইলি ব্যাকআপ এবং সিকিউর সার্ভার ব্যবহার করি। আপনার ডেটা ১০০% সুরক্ষিত।'],
-        ['q'=>'মোবাইল থেকে ব্যবহার করা যাবে?','a'=>'হ্যাঁ! আমাদের সফটওয়্যার সম্পূর্ণ রেসপন্সিভ। যেকোনো ডিভাইস থেকে (মোবাইল, ট্যাবলেট, ডেস্কটপ) ব্যবহার করতে পারবেন।'],
-        ['q'=>'ট্রায়ালের জন্য ক্রেডিট কার্ড লাগবে?','a'=>'না, ফ্রি ট্রায়ালের জন্য কোনো ক্রেডিট কার্ড বা পেমেন্ট তথ্য প্রয়োজন নেই। সরাসরি শুরু করুন!'],
-      ] : [
-        ['q'=>'Are there any limitations on the Free plan?','a'=>'On the Free plan, you can use 1 company, 2 projects, and up to 50 units. Basic reports and team management features are included.'],
-        ['q'=>'Can I upgrade my plan later?','a'=>'Absolutely! You can upgrade to Pro or Enterprise at any time. Your data will remain completely safe.'],
-        ['q'=>'Is my data secure?','a'=>'Yes, we use SSL encryption, daily backups, and secure servers. Your data is 100% protected.'],
-        ['q'=>'Can I use it on mobile?','a'=>'Yes! Our software is fully responsive. You can use it from any device (mobile, tablet, desktop).'],
-        ['q'=>'Do I need a credit card for the trial?','a'=>'No, no credit card or payment info is needed for the free trial. Start right away!'],
-      ];
-      ?>
+      @php($faqs = [
+        ['q'=>t('property_landing.faq_1_q'),'a'=>t('property_landing.faq_1_a')],
+        ['q'=>t('property_landing.faq_2_q'),'a'=>t('property_landing.faq_2_a')],
+        ['q'=>t('property_landing.faq_3_q'),'a'=>t('property_landing.faq_3_a')],
+        ['q'=>t('property_landing.faq_4_q'),'a'=>t('property_landing.faq_4_a')],
+        ['q'=>t('property_landing.faq_5_q'),'a'=>t('property_landing.faq_5_a')],
+      ])
       @foreach($faqs as $i => $faq)
       <div class="faq-item{{ $i === 0 ? ' open' : '' }}">
         <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
@@ -533,9 +511,9 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
 
 <!-- CTA -->
 <section class="cta-section">
-  <h2>{{ $lang === 'bn' ? 'আজই শুরু করুন — সম্পূর্ণ ফ্রি!' : 'Start Today — Completely Free!' }}</h2>
-  <p>{{ $lang === 'bn' ? 'হাজার হাজার রিয়েল এস্টেট ব্যবসা ইতোমধ্যে হিসাবিজ ব্যবহার করছে। আপনিও যোগ দিন।' : 'Thousands of real estate businesses already use Hishabiz. Join them today.' }}</p>
-  <a href="/register" class="btn-accent">{{ $lang === 'bn' ? 'ফ্রি অ্যাকাউন্ট তৈরি করুন' : 'Create Free Account' }} <span class="material-icons-round">arrow_forward</span></a>
+  <h2>{{ t('property_landing.cta_title') }}</h2>
+  <p>{{ t('property_landing.cta_sub') }}</p>
+  <a href="/register" class="btn-accent">{{ t('property_landing.cta_btn') }} <span class="material-icons-round">arrow_forward</span></a>
 </section>
 
 <!-- FOOTER -->
@@ -543,31 +521,31 @@ footer{background:var(--primary-dark);padding:50px 5% 30px;color:rgba(255,255,25
   <div class="footer-inner">
     <div class="footer-top">
       <div>
-        <div class="footer-brand">🏢 {{ $lang === 'bn' ? 'হিসাবিজ প্রপার্টি' : 'Hishabiz Property' }}</div>
-        <p class="footer-desc">{{ $lang === 'bn' ? 'বাংলাদেশের সবচেয়ে সহজ ও শক্তিশালী রিয়েল এস্টেট ম্যানেজমেন্ট সফটওয়্যার।' : "Bangladesh's easiest and most powerful real estate management software." }}</p>
+        <div class="footer-brand">🏢 {{ t('property_landing.brand') }}</div>
+        <p class="footer-desc">{{ t('property_landing.footer_desc') }}</p>
       </div>
       <div class="footer-col">
-        <h4>{{ $lang === 'bn' ? 'পণ্য' : 'Product' }}</h4>
-        <a href="#features">{{ $lang === 'bn' ? 'ফিচার' : 'Features' }}</a>
-        <a href="#pricing">{{ $lang === 'bn' ? 'মূল্য' : 'Pricing' }}</a>
-        <a href="#faq">{{ $lang === 'bn' ? 'FAQ' : 'FAQ' }}</a>
+        <h4>{{ t('property_landing.footer_product') }}</h4>
+        <a href="#features">{{ t('property_landing.nav_features') }}</a>
+        <a href="#pricing">{{ t('property_landing.nav_pricing') }}</a>
+        <a href="#faq">{{ t('property_landing.nav_faq') }}</a>
       </div>
       <div class="footer-col">
-        <h4>{{ $lang === 'bn' ? 'কোম্পানি' : 'Company' }}</h4>
-        <a href="#">{{ $lang === 'bn' ? 'আমাদের সম্পর্কে' : 'About Us' }}</a>
-        <a href="#">{{ $lang === 'bn' ? 'ব্লগ' : 'Blog' }}</a>
-        <a href="#">{{ $lang === 'bn' ? 'ক্যারিয়ার' : 'Careers' }}</a>
+        <h4>{{ t('property_landing.footer_company') }}</h4>
+        <a href="#">{{ t('property_landing.footer_about') }}</a>
+        <a href="#">{{ t('property_landing.footer_blog') }}</a>
+        <a href="#">{{ t('property_landing.footer_careers') }}</a>
       </div>
       <div class="footer-col">
-        <h4>{{ $lang === 'bn' ? 'সাপোর্ট' : 'Support' }}</h4>
-        <a href="#">{{ $lang === 'bn' ? 'যোগাযোগ' : 'Contact' }}</a>
-        <a href="#">{{ $lang === 'bn' ? 'ডকুমেন্টেশন' : 'Documentation' }}</a>
-        <a href="#">{{ $lang === 'bn' ? 'প্রাইভেসি পলিসি' : 'Privacy Policy' }}</a>
+        <h4>{{ t('property_landing.footer_support') }}</h4>
+        <a href="#">{{ t('property_landing.footer_contact') }}</a>
+        <a href="#">{{ t('property_landing.footer_docs') }}</a>
+        <a href="#">{{ t('property_landing.footer_privacy') }}</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; {{ date('Y') }} {{ $lang === 'bn' ? 'হিসাবিজ প্রপার্টি। সর্বস্বত্ব সংরক্ষিত।' : 'Hishabiz Property. All rights reserved.' }}</span>
-      <span>{{ $lang === 'bn' ? 'বাংলাদেশে ❤️ দিয়ে তৈরি' : 'Made with ❤️ in Bangladesh' }}</span>
+      <span>&copy; {{ date('Y') }} {{ t('property_landing.footer_copyright') }}</span>
+      <span>{{ t('property_landing.footer_made_in') }}</span>
     </div>
   </div>
 </footer>
