@@ -222,10 +222,28 @@
 @if ($booking && $booking->relationLoaded('documents') && $booking->documents->isNotEmpty())
     <div class="table-responsive mb-3">
         <table class="table table-sm mb-0">
-            <thead><tr><th>Title</th><th>Category</th><th>File</th><th class="text-end">Download</th></tr></thead>
+            <thead><tr><th>Preview</th><th>Title</th><th>Category</th><th>File</th><th class="text-end">Download</th></tr></thead>
             <tbody>
                 @foreach ($booking->documents as $doc)
+                    @php $isImage = str_starts_with((string) $doc->mime_type, 'image/'); @endphp
                     <tr>
+                        <td>
+                            <button type="button" class="btn p-0 border-0 bg-transparent doc-preview-trigger"
+                                data-preview-url="{{ url("/documents/{$doc->uuid}/preview") }}"
+                                data-download-url="{{ url("/documents/{$doc->uuid}/download") }}"
+                                data-title="{{ $doc->title }}"
+                                data-file-name="{{ $doc->file_name }}"
+                                data-is-image="{{ $isImage ? '1' : '0' }}"
+                                title="Click to preview">
+                                @if ($isImage)
+                                    <img src="{{ url("/documents/{$doc->uuid}/preview") }}" alt="{{ $doc->title }}"
+                                        class="rounded border" style="width:44px;height:44px;object-fit:cover;">
+                                @else
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded border bg-label-danger"
+                                        style="width:44px;height:44px;"><i class="mdi mdi-file-pdf-box mdi-24px"></i></span>
+                                @endif
+                            </button>
+                        </td>
                         <td class="fw-medium">{{ $doc->title }}</td>
                         <td>{{ $doc->category?->name ?? '—' }}</td>
                         <td>{{ $doc->file_name }}</td>
@@ -272,13 +290,31 @@
     @endforeach
 </div>
 
+{{-- Document preview modal --}}
+<div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-truncate" id="docPreviewTitle">Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="docPreviewBody" style="min-height:60vh;"></div>
+            <div class="modal-footer">
+                <a href="#" id="docPreviewDownload" class="btn btn-outline-primary" download>
+                    <i class="mdi mdi-download-outline me-1"></i>Download
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 (function () {
     function money(n) {
         return (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
-
     // Live totals.
     var sharesEl = document.getElementById('shares_count');
     var priceEl = document.getElementById('share_price');
@@ -381,6 +417,30 @@
         var docBtn = e.target.closest('.remove-document');
         if (docBtn) { var d = docBtn.closest('.document-row'); if (d) d.remove(); }
     });
+
+    // Document preview modal.
+    var modalEl = document.getElementById('docPreviewModal');
+    if (modalEl && typeof bootstrap !== 'undefined') {
+        var modal = new bootstrap.Modal(modalEl);
+        var body = document.getElementById('docPreviewBody');
+        var titleEl = document.getElementById('docPreviewTitle');
+        var downloadEl = document.getElementById('docPreviewDownload');
+
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest('.doc-preview-trigger');
+            if (!trigger) { return; }
+            var url = trigger.getAttribute('data-preview-url');
+            var isImage = trigger.getAttribute('data-is-image') === '1';
+            titleEl.textContent = trigger.getAttribute('data-title') || trigger.getAttribute('data-file-name') || 'Preview';
+            downloadEl.setAttribute('href', trigger.getAttribute('data-download-url') || url);
+            body.innerHTML = isImage
+                ? '<img src="' + url + '" alt="preview" class="img-fluid rounded" style="max-height:75vh;">'
+                : '<iframe src="' + url + '" style="width:100%;height:75vh;border:0;" title="preview"></iframe>';
+            modal.show();
+        });
+
+        modalEl.addEventListener('hidden.bs.modal', function () { body.innerHTML = ''; });
+    }
 })();
 </script>
 @endpush

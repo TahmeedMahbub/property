@@ -314,6 +314,27 @@
         </div>
     </div>
 </div>
+
+{{-- Document preview modal --}}
+<div class="modal fade" id="docPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-truncate" id="docPreviewTitle">Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center" id="docPreviewBody" style="min-height:60vh;">
+                {{-- injected by JS --}}
+            </div>
+            <div class="modal-footer">
+                <a href="#" id="docPreviewDownload" class="btn btn-outline-primary" download>
+                    <i class="mdi mdi-download-outline me-1"></i>Download
+                </a>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -337,6 +358,37 @@
 
     sel.addEventListener('change', sync);
     sync();
+})();
+
+// Document preview modal.
+(function () {
+    var modalEl = document.getElementById('docPreviewModal');
+    if (!modalEl || typeof bootstrap === 'undefined') { return; }
+    var modal = new bootstrap.Modal(modalEl);
+    var body = document.getElementById('docPreviewBody');
+    var titleEl = document.getElementById('docPreviewTitle');
+    var downloadEl = document.getElementById('docPreviewDownload');
+
+    document.addEventListener('click', function (e) {
+        var trigger = e.target.closest('.doc-preview-trigger');
+        if (!trigger) { return; }
+
+        var url = trigger.getAttribute('data-preview-url');
+        var isImage = trigger.getAttribute('data-is-image') === '1';
+        titleEl.textContent = trigger.getAttribute('data-title') || trigger.getAttribute('data-file-name') || 'Preview';
+        downloadEl.setAttribute('href', trigger.getAttribute('data-download-url') || url);
+
+        if (isImage) {
+            body.innerHTML = '<img src="' + url + '" alt="preview" class="img-fluid rounded" style="max-height:75vh;">';
+        } else {
+            body.innerHTML = '<iframe src="' + url + '" style="width:100%;height:75vh;border:0;" title="preview"></iframe>';
+        }
+        modal.show();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', function () {
+        body.innerHTML = '';
+    });
 })();
 </script>
 @endpush
