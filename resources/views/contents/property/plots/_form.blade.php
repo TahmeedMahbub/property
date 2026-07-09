@@ -10,6 +10,17 @@
     ])->values()->all() ?? []);
     if (empty($oldSellers)) { $oldSellers = [['name' => '', 'phone' => '', 'nid' => '', 'address' => '']]; }
     if (empty($oldOwners)) { $oldOwners = [['name' => '', 'phone' => '', 'nid' => '', 'address' => '', 'ownership_percentage' => '']]; }
+
+    // "Paid" checkboxes: which cost fields already have an auto-generated cash-out payment.
+    $fieldPaymentTypes = \App\Domains\Plot\Services\PlotService::FIELD_PAYMENT_TYPES;
+    $paidTypes = $plot?->payments?->where('auto_generated', true)->pluck('payment_type')->all() ?? [];
+    $isPaid = function ($field) use ($fieldPaymentTypes, $paidTypes) {
+        $old = old('paid');
+        if (is_array($old)) {
+            return ! empty($old[$field]);
+        }
+        return in_array($fieldPaymentTypes[$field] ?? null, $paidTypes, true);
+    };
 @endphp
 
 @if ($errors->any())
@@ -110,7 +121,7 @@
         </select>
     </div>
     <div class="col-md-4 mb-3">
-        <label for="price_per_katha" class="form-label">Price / Katha</label>
+        <label for="price_per_katha" class="form-label">Price / <span id="price-per-unit-label">{{ ucfirst($val('land_unit', 'katha')) }}</span></label>
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control" id="price_per_katha" name="price_per_katha" value="{{ $val('price_per_katha') }}">
@@ -127,6 +138,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="purchase_price" name="purchase_price" value="{{ $val('purchase_price', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[purchase_price]" value="1" title="Mark as paid" {{ $isPaid('purchase_price') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -134,6 +148,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control" id="bayna_amount" name="bayna_amount" value="{{ $val('bayna_amount', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[bayna_amount]" value="1" title="Mark as paid" {{ $isPaid('bayna_amount') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -141,6 +158,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="registration_cost" name="registration_cost" value="{{ $val('registration_cost', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[registration_cost]" value="1" title="Mark as paid" {{ $isPaid('registration_cost') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -148,6 +168,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="mutation_cost" name="mutation_cost" value="{{ $val('mutation_cost', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[mutation_cost]" value="1" title="Mark as paid" {{ $isPaid('mutation_cost') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -155,6 +178,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="legal_cost" name="legal_cost" value="{{ $val('legal_cost', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[legal_cost]" value="1" title="Mark as paid" {{ $isPaid('legal_cost') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -162,6 +188,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="broker_cost" name="broker_cost" value="{{ $val('broker_cost', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[broker_cost]" value="1" title="Mark as paid" {{ $isPaid('broker_cost') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -169,6 +198,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" step="0.01" min="0" class="form-control cost-input" id="other_cost" name="other_cost" value="{{ $val('other_cost', '0') }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1" type="checkbox" name="paid[other_cost]" value="1" title="Mark as paid" {{ $isPaid('other_cost') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-8 mb-3">
@@ -240,6 +272,37 @@
         el.addEventListener('input', recalcTotal);
     });
     recalcTotal();
+
+    // Dynamic "Price / <unit>" label + auto-calculate purchase price.
+    var unitLabels = { katha: 'Katha', decimal: 'Decimal', acre: 'Acre' };
+    var landSizeEl = document.getElementById('land_size');
+    var landUnitEl = document.getElementById('land_unit');
+    var pricePerUnitEl = document.getElementById('price_per_katha');
+    var purchasePriceEl = document.getElementById('purchase_price');
+    var unitLabelEl = document.getElementById('price-per-unit-label');
+
+    function updateUnitLabel() {
+        if (unitLabelEl) {
+            unitLabelEl.textContent = unitLabels[landUnitEl.value] || 'Unit';
+        }
+    }
+
+    // Purchase price = land size × price per unit. Overwrites the field so it
+    // stays in sync while a source value changes, but remains freely editable.
+    function recalcPurchasePrice() {
+        var size = parseFloat(landSizeEl.value) || 0;
+        var rate = parseFloat(pricePerUnitEl.value) || 0;
+        purchasePriceEl.value = (size * rate).toFixed(2);
+        recalcTotal();
+    }
+
+    landUnitEl.addEventListener('change', function () {
+        updateUnitLabel();
+        recalcPurchasePrice();
+    });
+    landSizeEl.addEventListener('input', recalcPurchasePrice);
+    pricePerUnitEl.addEventListener('input', recalcPurchasePrice);
+    updateUnitLabel();
 
     // Repeater rows for sellers and owners.
     function nextIndex(wrapper, rowClass) {

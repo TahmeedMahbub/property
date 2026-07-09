@@ -31,6 +31,22 @@ class PlotService
     public const CATEGORY_ACQUISITION = 'plot_acquisition';
 
     /**
+     * Maps a plot cost field to the payment type recorded when its "Paid"
+     * checkbox is ticked on the plot form. These payments are flagged
+     * auto_generated so they can be re-synced without touching payments the
+     * user records manually.
+     */
+    public const FIELD_PAYMENT_TYPES = [
+        'bayna_amount' => 'bayna',
+        'purchase_price' => 'land',
+        'registration_cost' => 'registration',
+        'mutation_cost' => 'mutation',
+        'legal_cost' => 'legal',
+        'broker_cost' => 'broker',
+        'other_cost' => 'other',
+    ];
+
+    /**
      * Create a plot with its sellers and legal owners.
      *
      * @param  array<string, mixed>  $data
@@ -39,16 +55,18 @@ class PlotService
     {
         $sellers = $data['sellers'] ?? [];
         $owners = $data['owners'] ?? [];
-        unset($data['sellers'], $data['owners']);
+        $paid = $data['paid'] ?? [];
+        unset($data['sellers'], $data['owners'], $data['paid']);
 
         $data['company_id'] = $companyId;
         $data['created_by'] = $data['created_by'] ?? Auth::id();
         $data['status'] = $data['status'] ?? 'prospect';
 
-        return DB::transaction(function () use ($data, $sellers, $owners) {
+        return DB::transaction(function () use ($data, $sellers, $owners, $paid) {
             $plot = Plot::create($data);
             $this->syncSellers($plot, $sellers);
             $this->syncOwners($plot, $owners);
+            $this->syncFormPayments($plot, $paid);
 
             return $plot;
         });
@@ -63,9 +81,10 @@ class PlotService
     {
         $sellers = $data['sellers'] ?? null;
         $owners = $data['owners'] ?? null;
-        unset($data['sellers'], $data['owners']);
+        $paid = $data['paid'] ?? [];
+        unset($data['sellers'], $data['owners'], $data['paid']);
 
-        return DB::transaction(function () use ($plot, $data, $sellers, $owners) {
+        return DB::transaction(function () use ($plot, $data, $sellers, $owners, $paid) {
             $plot->update($data);
 
             if ($sellers !== null) {
@@ -77,6 +96,8 @@ class PlotService
                 $plot->owners()->delete();
                 $this->syncOwners($plot, $owners);
             }
+
+            $this->syncFormPayments($plot, $paid);
 
             return $plot->refresh();
         });
@@ -157,6 +178,52 @@ class PlotService
             remarks: ucfirst($payment->payment_type) . ' payment for plot ' . $plot->plot_code,
             userId: $payment->created_by,
         );
+    }
+
+    /**
+     * Reconcile the auto-generated "Paid" payments driven by the plot form's
+     * per-cost checkboxes. For each cost field: create/update its cash-out
+     * payment when ticked (and amount > 0), or reverse and remove it otherwise.
+     *
+     * @param  array<string, mixed>  $paidFlags  field => "1" when marked paid
+     */
+    private function syncFormPayments(Plot $plot, array $paidFlags): void
+    {
+        foreach (self::FIELD_PAYMENT_TYPES as $field => $type) {
+            $amount = round((float) $plot->$field, 2);
+            $isPaid = ! empty($paidFlags[$field]) && $amount > 0;
+
+            $payment = $plot->payments()
+                ->where('payment_type', $type)
+                ->where('auto_generated', true)
+                ->first();
+
+            if ($isPaid) {
+                if ($payment) {
+                    $payment->update(['amount' => $amount]);
+                } else {
+                    $payment = $plot->payments()->create([
+                        'created_by' => Auth::id(),
+                        'auto_generated' => true,
+                        'payment_type' => $type,
+                        'amount' => $amount,
+                        'payment_date' => now()->toDateString(),
+                        'notes' => 'Marked paid from plot form.',
+                    ]);
+                }
+
+                $this->syncPaymentJournal($plot, $payment);
+            } elseif ($payment) {
+                JournalService::reverseReference(
+                    companyId: $plot->company_id,
+                    reference: $payment,
+                    category: self::CATEGORY_ACQUISITION,
+                    remarks: 'Reversed plot payment for ' . $plot->plot_code,
+                );
+
+                $payment->delete();
+            }
+        }
     }
 
     /**

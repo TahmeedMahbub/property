@@ -23,10 +23,14 @@ class PlotReportService
     {
         $plots = Plot::forCompany($companyId)
             ->withSum('payments as paid_total', 'amount')
+            ->withSum([
+                'payments as due_paid_total' => fn ($q) => $q->whereNotIn('payment_type', PlotPayment::NON_DUE_TYPES),
+            ], 'amount')
             ->get();
 
         $totalCost = 0.0;
         $totalPaid = 0.0;
+        $totalDuePaid = 0.0;
         $totalLandKatha = 0.0;
         $baynaPending = 0;
         $registrationPending = 0;
@@ -34,6 +38,7 @@ class PlotReportService
         foreach ($plots as $plot) {
             $totalCost += $plot->total_acquisition_cost;
             $totalPaid += (float) ($plot->paid_total ?? 0);
+            $totalDuePaid += (float) ($plot->due_paid_total ?? 0);
             $totalLandKatha += $plot->land_size_in_katha;
 
             if ($plot->is_bayna_pending) {
@@ -50,7 +55,7 @@ class PlotReportService
             'total_land_katha' => round($totalLandKatha, 4),
             'total_acquisition_cost' => round($totalCost, 2),
             'total_paid' => round($totalPaid, 2),
-            'total_due' => round($totalCost - $totalPaid, 2),
+            'total_due' => round($totalCost - $totalDuePaid, 2),
             'bayna_pending' => $baynaPending,
             'registration_pending' => $registrationPending,
         ];

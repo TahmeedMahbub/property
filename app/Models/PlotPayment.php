@@ -16,6 +16,7 @@ class PlotPayment extends Model
     protected $fillable = [
         'plot_id',
         'created_by',
+        'auto_generated',
         'payment_type',
         'amount',
         'payment_date',
@@ -34,13 +35,19 @@ class PlotPayment extends Model
         'legal' => 'Legal Payment',
         'mutation' => 'Mutation Payment',
         'broker' => 'Broker Payment',
+        'other' => 'Other Payment',
+        'extra' => "Extra Payment (Don't Affect on Due)",
     ];
+
+    /** Payment types that are extra cash-outs and do NOT reduce the acquisition due. */
+    public const NON_DUE_TYPES = ['extra'];
 
     protected function casts(): array
     {
         return [
             'amount' => 'decimal:2',
             'payment_date' => 'date',
+            'auto_generated' => 'boolean',
         ];
     }
 

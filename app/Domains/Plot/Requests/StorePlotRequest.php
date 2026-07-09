@@ -45,6 +45,10 @@ class StorePlotRequest extends FormRequest
             'broker_cost' => ['nullable', 'numeric', 'min:0'],
             'other_cost' => ['nullable', 'numeric', 'min:0'],
 
+            // "Paid" flags per cost field (records a cash-out payment when checked)
+            'paid' => ['nullable', 'array'],
+            'paid.*' => ['nullable', 'in:0,1'],
+
             'notes' => ['nullable', 'string', 'max:2000'],
 
             // Sellers

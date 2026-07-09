@@ -14,7 +14,7 @@ class StorePlotPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_type' => ['required', 'in:bayna,land,registration,legal,mutation,broker'],
+            'payment_type' => ['required', 'in:bayna,land,registration,legal,mutation,broker,other,extra'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_date' => ['required', 'date'],
             'payment_method' => ['required', 'in:cash,cheque,bank_transfer,mobile_banking,other'],

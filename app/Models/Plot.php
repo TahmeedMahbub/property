@@ -156,10 +156,21 @@ class Plot extends Model
         return round((float) $this->payments->sum('amount'), 2);
     }
 
-    /** Outstanding acquisition due = total cost − total paid. */
+    /** Cash paid that counts against the acquisition due (excludes extra payments). */
+    public function getTotalPaidTowardDueAttribute(): float
+    {
+        return round(
+            (float) $this->payments
+                ->whereNotIn('payment_type', PlotPayment::NON_DUE_TYPES)
+                ->sum('amount'),
+            2
+        );
+    }
+
+    /** Outstanding acquisition due = total cost − payments that count toward due. */
     public function getTotalDueAttribute(): float
     {
-        return round($this->total_acquisition_cost - $this->total_paid, 2);
+        return round($this->total_acquisition_cost - $this->total_paid_toward_due, 2);
     }
 
     /** Land size normalised to katha for aggregation/reporting. */
