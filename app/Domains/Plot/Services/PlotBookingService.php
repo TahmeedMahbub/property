@@ -33,6 +33,18 @@ class PlotBookingService
     public const CATEGORY = 'plot_share_sale';
 
     /**
+     * Maps a booking amount field to the payment type recorded when its "Paid"
+     * checkbox is ticked on the booking form. These payments are flagged
+     * auto_generated so they can be re-synced without touching payments the user
+     * records manually. Booking money and both fees count toward cash received.
+     */
+    public const FIELD_PAYMENT_TYPES = [
+        'booking_money' => 'booking',
+        'registration_fee' => 'registration',
+        'other_fee' => 'other',
+    ];
+
+    /**
      * Create a booking with its manual installment schedule and certificates.
      *
      * @param  array<string, mixed>  $data
@@ -41,7 +53,8 @@ class PlotBookingService
     {
         $installments = $data['installments'] ?? [];
         $documents = $data['documents'] ?? [];
-        unset($data['installments'], $data['documents']);
+        $paid = $data['paid'] ?? [];
+        unset($data['installments'], $data['documents'], $data['paid']);
 
         $data['company_id'] = $companyId;
         $data['created_by'] = $data['created_by'] ?? Auth::id();
@@ -51,11 +64,12 @@ class PlotBookingService
             $data['booking_no'] = $this->generateBookingNo($companyId);
         }
 
-        return DB::transaction(function () use ($data, $installments, $documents) {
+        return DB::transaction(function () use ($data, $installments, $documents, $paid) {
             $this->guardShareAvailability($data['plot_id'], (int) ($data['shares_count'] ?? 0), $data['company_id']);
 
             $booking = PlotBooking::create($data);
             $this->syncInstallments($booking, $installments);
+            $this->syncFormPayments($booking, $paid);
             $this->syncDocuments($booking, $documents);
 
             return $booking;
@@ -71,9 +85,10 @@ class PlotBookingService
     {
         $installments = $data['installments'] ?? null;
         $documents = $data['documents'] ?? [];
-        unset($data['installments'], $data['documents']);
+        $paid = $data['paid'] ?? [];
+        unset($data['installments'], $data['documents'], $data['paid']);
 
-        return DB::transaction(function () use ($booking, $data, $installments, $documents) {
+        return DB::transaction(function () use ($booking, $data, $installments, $documents, $paid) {
             $newShares = (int) ($data['shares_count'] ?? $booking->shares_count);
             $newPlotId = (int) ($data['plot_id'] ?? $booking->plot_id);
 
@@ -89,6 +104,7 @@ class PlotBookingService
                 $this->syncInstallments($booking, $installments);
             }
 
+            $this->syncFormPayments($booking->refresh(), $paid);
             $this->syncDocuments($booking, $documents);
 
             return $booking->refresh();
@@ -169,6 +185,53 @@ class PlotBookingService
             remarks: ucfirst($payment->payment_type) . ' payment for booking ' . $booking->booking_no,
             userId: $payment->created_by,
         );
+    }
+
+    /**
+     * Reconcile the auto-generated payments driven by the booking form's per-
+     * amount "Paid" checkboxes. For each amount field: create/update its cash-in
+     * payment when ticked (and amount > 0), or reverse and remove it otherwise.
+     * Manually recorded payments are never touched.
+     *
+     * @param  array<string, mixed>  $paidFlags  field => "1" when marked paid
+     */
+    private function syncFormPayments(PlotBooking $booking, array $paidFlags): void
+    {
+        foreach (self::FIELD_PAYMENT_TYPES as $field => $type) {
+            $amount = round((float) $booking->$field, 2);
+            $isPaid = ! empty($paidFlags[$field]) && $amount > 0;
+
+            $payment = $booking->payments()
+                ->where('payment_type', $type)
+                ->where('auto_generated', true)
+                ->first();
+
+            if ($isPaid) {
+                if ($payment) {
+                    $payment->update(['amount' => $amount]);
+                } else {
+                    $payment = $booking->payments()->create([
+                        'created_by' => Auth::id(),
+                        'auto_generated' => true,
+                        'payment_type' => $type,
+                        'amount' => $amount,
+                        'payment_date' => now()->toDateString(),
+                        'notes' => 'Marked paid from booking form.',
+                    ]);
+                }
+
+                $this->syncPaymentJournal($booking, $payment);
+            } elseif ($payment) {
+                JournalService::reverseReference(
+                    companyId: $booking->company_id,
+                    reference: $payment,
+                    category: self::CATEGORY,
+                    remarks: 'Reversed booking payment for ' . $booking->booking_no,
+                );
+
+                $payment->delete();
+            }
+        }
     }
 
     /**

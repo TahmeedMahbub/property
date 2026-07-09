@@ -153,6 +153,7 @@ class PlotBookingController extends Controller
             ],
             'shares_count' => ['required', 'integer', 'min:1'],
             'share_price' => ['required', 'numeric', 'min:0'],
+            'booking_money' => ['required', 'numeric', 'min:0'],
             'registration_fee' => ['nullable', 'numeric', 'min:0'],
             'other_fee' => ['nullable', 'numeric', 'min:0'],
             'discount' => ['nullable', 'numeric', 'min:0'],
@@ -160,6 +161,10 @@ class PlotBookingController extends Controller
             'status' => ['required', Rule::in(PlotBooking::STATUSES)],
             'other_info' => ['nullable', 'string', 'max:2000'],
             'notes' => ['nullable', 'string', 'max:2000'],
+
+            // "Paid" flags per amount field (records a cash-in payment when checked)
+            'paid' => ['nullable', 'array'],
+            'paid.*' => ['nullable', 'in:0,1'],
 
             'installments' => ['nullable', 'array'],
             'installments.*.title' => ['nullable', 'string', 'max:255'],

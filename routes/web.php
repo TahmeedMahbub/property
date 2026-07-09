@@ -107,6 +107,7 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     Route::resource('plots', PlotController::class);
 
     // Plot Share Bookings (customer buys plot shares)
+    Route::get('/bookings/{booking}/payments/create', [PlotBookingPaymentController::class, 'create'])->name('bookings.payments.create');
     Route::post('/bookings/{booking}/payments', [PlotBookingPaymentController::class, 'store'])->name('bookings.payments.store');
     Route::delete('/bookings/{booking}/payments/{payment}', [PlotBookingPaymentController::class, 'destroy'])->name('bookings.payments.destroy');
     Route::post('/bookings/{booking}/documents', [PlotBookingDocumentController::class, 'store'])->name('bookings.documents.store');

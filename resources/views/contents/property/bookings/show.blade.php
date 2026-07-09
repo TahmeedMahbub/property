@@ -14,6 +14,9 @@
                 </ol>
             </nav>
             <div class="d-flex gap-2">
+                <a href="{{ url("/bookings/{$booking->uuid}/payments/create") }}" class="btn btn-sm btn-primary">
+                    <i class="mdi mdi-cash-plus me-1"></i>Record Payment
+                </a>
                 <a href="{{ url("/bookings/{$booking->uuid}/edit") }}" class="btn btn-sm btn-outline-primary">
                     <i class="mdi mdi-pencil-outline me-1"></i>Edit
                 </a>
@@ -90,6 +93,7 @@
                     <dt class="col-5 text-muted fw-normal">Customer Phone</dt><dd class="col-7">{{ $booking->customer?->phone ?? '—' }}</dd>
                     <dt class="col-5 text-muted fw-normal">Plot</dt><dd class="col-7">{{ $booking->plot?->plot_name ?? '—' }} <span class="text-muted">({{ $booking->plot?->plot_code }})</span></dd>
                     <dt class="col-5 text-muted fw-normal">Booking Date</dt><dd class="col-7">{{ optional($booking->booking_date)->format('d M Y') ?: '—' }}</dd>
+                    <dt class="col-5 text-muted fw-normal">Booking Money</dt><dd class="col-7">৳{{ number_format($booking->booking_money, 2) }}</dd>
                     <dt class="col-5 text-muted fw-normal">Status</dt><dd class="col-7">{{ ucfirst($booking->status) }}</dd>
                     <dt class="col-5 text-muted fw-normal">Created By</dt><dd class="col-7">{{ $booking->creator?->name ?? '—' }}</dd>
                 </dl>
@@ -163,62 +167,13 @@
     {{-- Payments --}}
     <div class="col-12">
         <div class="card">
-            <div class="card-header"><h6 class="mb-0">Record Payment</h6></div>
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0">Payment History</h6>
+                <a href="{{ url("/bookings/{$booking->uuid}/payments/create") }}" class="btn btn-sm btn-primary">
+                    <i class="mdi mdi-cash-plus me-1"></i>Record Payment
+                </a>
+            </div>
             <div class="card-body">
-                <form method="POST" action="{{ url("/bookings/{$booking->uuid}/payments") }}" class="row g-2 mb-4">
-                    @csrf
-                    <div class="col-md-3">
-                        <label class="form-label small">Payment Type <span class="text-danger">*</span></label>
-                        <select name="payment_type" class="form-select" required>
-                            @foreach (\App\Models\PlotBookingPayment::TYPES as $v => $l)
-                                <option value="{{ $v }}" {{ old('payment_type') === $v ? 'selected' : '' }}>{{ $l }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Installment</label>
-                        <select name="installment_id" class="form-select">
-                            <option value="">— Not linked —</option>
-                            @foreach ($booking->installments as $inst)
-                                <option value="{{ $inst->id }}" {{ (string) old('installment_id') === (string) $inst->id ? 'selected' : '' }}>
-                                    #{{ $inst->installment_no }} {{ $inst->title ? '- ' . $inst->title : '' }} (৳{{ number_format($inst->due_amount, 2) }} due)
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Amount <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input type="number" step="0.01" min="0.01" name="amount" class="form-control" value="{{ old('amount') }}" required>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Date <span class="text-danger">*</span></label>
-                        <input type="date" name="payment_date" class="form-control" value="{{ old('payment_date', date('Y-m-d')) }}" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Method</label>
-                        <select name="payment_method" class="form-select">
-                            @foreach (['cash' => 'Cash', 'cheque' => 'Cheque', 'bank_transfer' => 'Bank Transfer', 'mobile_banking' => 'Mobile Banking', 'other' => 'Other'] as $v => $l)
-                                <option value="{{ $v }}" {{ old('payment_method', 'cash') === $v ? 'selected' : '' }}>{{ $l }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Reference / Cheque No</label>
-                        <input type="text" name="reference_no" class="form-control" value="{{ old('reference_no') }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label small">Notes</label>
-                        <input type="text" name="notes" class="form-control" value="{{ old('notes') }}">
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary"><i class="mdi mdi-cash-plus me-1"></i>Save Payment</button>
-                    </div>
-                </form>
-
-                <h6 class="mb-2">Payment History</h6>
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead>
@@ -309,10 +264,28 @@
 
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
-                        <thead><tr><th>Title</th><th>Category</th><th>Description</th><th>File</th><th class="text-end">Actions</th></tr></thead>
+                        <thead><tr><th>Preview</th><th>Title</th><th>Category</th><th>Description</th><th>File</th><th class="text-end">Actions</th></tr></thead>
                         <tbody>
                             @forelse ($booking->documents as $doc)
+                                @php $isImage = str_starts_with((string) $doc->mime_type, 'image/'); @endphp
                                 <tr>
+                                    <td>
+                                        <button type="button" class="btn p-0 border-0 bg-transparent doc-preview-trigger"
+                                            data-preview-url="{{ url("/documents/{$doc->uuid}/preview") }}"
+                                            data-download-url="{{ url("/documents/{$doc->uuid}/download") }}"
+                                            data-title="{{ $doc->title }}"
+                                            data-file-name="{{ $doc->file_name }}"
+                                            data-is-image="{{ $isImage ? '1' : '0' }}"
+                                            title="Click to preview">
+                                            @if ($isImage)
+                                                <img src="{{ url("/documents/{$doc->uuid}/preview") }}" alt="{{ $doc->title }}"
+                                                    class="rounded border" style="width:44px;height:44px;object-fit:cover;">
+                                            @else
+                                                <span class="d-inline-flex align-items-center justify-content-center rounded border bg-label-danger"
+                                                    style="width:44px;height:44px;"><i class="mdi mdi-file-pdf-box mdi-24px"></i></span>
+                                            @endif
+                                        </button>
+                                    </td>
                                     <td class="fw-medium">{{ $doc->title }}</td>
                                     <td>{{ $doc->category?->name ?? '—' }}</td>
                                     <td>{{ \Illuminate\Support\Str::limit($doc->description, 60) ?: '—' }}</td>
@@ -332,7 +305,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center text-muted py-3">No documents uploaded yet.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-3">No documents uploaded yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

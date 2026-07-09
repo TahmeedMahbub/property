@@ -23,6 +23,22 @@
 
     $selectedPlot = $val('plot_id');
     $selectedCustomer = $val('customer_id');
+
+    // "Paid" checkboxes: which amount fields already have an auto-generated cash-in payment.
+    $fieldPaymentTypes = \App\Domains\Plot\Services\PlotBookingService::FIELD_PAYMENT_TYPES;
+    $paidTypes = $booking ? $booking->payments()->where('auto_generated', true)->pluck('payment_type')->all() : [];
+    // Cash already received through manually recorded payments (not the checkboxes).
+    $manualPaid = $booking ? (float) $booking->payments()->where('auto_generated', false)->sum('amount') : 0.0;
+    $isPaid = function ($field) use ($booking, $fieldPaymentTypes, $paidTypes) {
+        $old = old('paid');
+        if (is_array($old)) {
+            return ! empty($old[$field]);
+        }
+        if (! $booking) {
+            return $field === 'booking_money'; // booking money defaults to paid on new bookings
+        }
+        return in_array($fieldPaymentTypes[$field] ?? null, $paidTypes, true);
+    };
 @endphp
 
 @if ($errors->any())
@@ -104,10 +120,24 @@
         <input type="text" class="form-control" id="share_value_display" value="0.00" readonly disabled>
     </div>
     <div class="col-md-4 mb-3">
+        <label for="booking_money" class="form-label">Booking Money <span class="text-danger">*</span></label>
+        <div class="input-group">
+            <span class="input-group-text">৳</span>
+            <input type="number" min="0" step="0.01" class="form-control amount-input" id="booking_money" name="booking_money" value="{{ $val('booking_money', 0) }}" required>
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1 paid-input" type="checkbox" name="paid[booking_money]" value="1" data-target="booking_money" title="Mark as paid" {{ $isPaid('booking_money') ? 'checked' : '' }}> Paid
+            </span>
+        </div>
+        <div class="form-text">Mandatory to book (0 allowed for edge cases).</div>
+    </div>
+    <div class="col-md-4 mb-3">
         <label for="registration_fee" class="form-label">Registration Fee</label>
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" min="0" step="0.01" class="form-control amount-input" id="registration_fee" name="registration_fee" value="{{ $val('registration_fee', 0) }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1 paid-input" type="checkbox" name="paid[registration_fee]" value="1" data-target="registration_fee" title="Mark as paid" {{ $isPaid('registration_fee') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -115,6 +145,9 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="number" min="0" step="0.01" class="form-control amount-input" id="other_fee" name="other_fee" value="{{ $val('other_fee', 0) }}">
+            <span class="input-group-text">
+                <input class="form-check-input mt-0 me-1 paid-input" type="checkbox" name="paid[other_fee]" value="1" data-target="other_fee" title="Mark as paid" {{ $isPaid('other_fee') ? 'checked' : '' }}> Paid
+            </span>
         </div>
     </div>
     <div class="col-md-4 mb-3">
@@ -129,6 +162,20 @@
         <div class="input-group">
             <span class="input-group-text">৳</span>
             <input type="text" class="form-control fw-bold" id="total_payable_display" value="0.00" readonly disabled>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label class="form-label">Total Paid</label>
+        <div class="input-group">
+            <span class="input-group-text">৳</span>
+            <input type="text" class="form-control text-success fw-medium" id="total_paid_display" value="0.00" readonly disabled>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label class="form-label fw-bold">Total Due</label>
+        <div class="input-group">
+            <span class="input-group-text">৳</span>
+            <input type="text" class="form-control fw-bold text-danger" id="total_due_display" value="0.00" readonly disabled>
         </div>
     </div>
     <div class="col-12 mb-3">
@@ -240,6 +287,21 @@
     var discountEl = document.getElementById('discount');
     var shareValueEl = document.getElementById('share_value_display');
     var payableEl = document.getElementById('total_payable_display');
+    var paidEl = document.getElementById('total_paid_display');
+    var dueEl = document.getElementById('total_due_display');
+
+    // Cash already received through manually recorded payments (server-provided).
+    var manualPaid = {{ $manualPaid + 0 }};
+
+    // Sum of amount fields whose "Paid" checkbox is ticked, plus manual payments.
+    function markedPaid() {
+        var sum = manualPaid;
+        document.querySelectorAll('.paid-input:checked').forEach(function (cb) {
+            var el = document.getElementById(cb.getAttribute('data-target'));
+            if (el) { sum += parseFloat(el.value) || 0; }
+        });
+        return sum;
+    }
 
     function recalc() {
         var shareValue = (parseFloat(sharesEl.value) || 0) * (parseFloat(priceEl.value) || 0);
@@ -247,11 +309,21 @@
             + (parseFloat(regEl.value) || 0)
             + (parseFloat(otherEl.value) || 0)
             - (parseFloat(discountEl.value) || 0);
+        payable = payable < 0 ? 0 : payable;
+
+        var paid = markedPaid();
+        var due = payable - paid;
+
         shareValueEl.value = money(shareValue);
-        payableEl.value = money(payable < 0 ? 0 : payable);
+        payableEl.value = money(payable);
+        paidEl.value = money(paid);
+        dueEl.value = money(due < 0 ? 0 : due);
     }
-    [sharesEl, priceEl, regEl, otherEl, discountEl].forEach(function (el) {
-        el.addEventListener('input', recalc);
+    [sharesEl, priceEl, regEl, otherEl, discountEl, document.getElementById('booking_money')].forEach(function (el) {
+        if (el) { el.addEventListener('input', recalc); }
+    });
+    document.querySelectorAll('.paid-input').forEach(function (cb) {
+        cb.addEventListener('change', recalc);
     });
     recalc();
 

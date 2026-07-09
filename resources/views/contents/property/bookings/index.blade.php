@@ -3,6 +3,9 @@
 @section('title', 'Bookings')
 
 @section('content')
+<style>
+    .bookings-table { overflow: visible; }
+</style>
 <div class="row gy-4">
     <div class="col-12">
         <nav aria-label="breadcrumb">
@@ -51,7 +54,7 @@
                     </div>
                 </form>
             </div>
-            <div class="table-responsive">
+            <div class="table-responsive bookings-table">
                 <table class="table">
                     <thead>
                         <tr>
@@ -100,6 +103,9 @@
                                             </a>
                                             <a class="dropdown-item" href="{{ url("/bookings/{$booking->uuid}/edit") }}">
                                                 <i class="mdi mdi-pencil-outline me-1"></i> Edit
+                                            </a>
+                                            <a class="dropdown-item" href="{{ url("/bookings/{$booking->uuid}/payments/create") }}">
+                                                <i class="mdi mdi-cash-plus me-1"></i> Record Payment
                                             </a>
                                             <div class="dropdown-divider"></div>
                                             <form method="POST" action="{{ url("/bookings/{$booking->uuid}") }}"

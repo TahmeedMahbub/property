@@ -18,6 +18,7 @@ class PlotBookingPayment extends Model
         'installment_id',
         'created_by',
         'payment_type',
+        'auto_generated',
         'amount',
         'payment_date',
         'payment_method',
@@ -41,6 +42,7 @@ class PlotBookingPayment extends Model
         return [
             'amount' => 'decimal:2',
             'payment_date' => 'date',
+            'auto_generated' => 'boolean',
         ];
     }
 

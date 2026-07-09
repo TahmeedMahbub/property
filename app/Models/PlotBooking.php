@@ -25,6 +25,7 @@ class PlotBooking extends Model
         'booking_no',
         'shares_count',
         'share_price',
+        'booking_money',
         'registration_fee',
         'other_fee',
         'discount',
@@ -44,6 +45,7 @@ class PlotBooking extends Model
         return [
             'shares_count' => 'integer',
             'share_price' => 'decimal:2',
+            'booking_money' => 'decimal:2',
             'registration_fee' => 'decimal:2',
             'other_fee' => 'decimal:2',
             'discount' => 'decimal:2',

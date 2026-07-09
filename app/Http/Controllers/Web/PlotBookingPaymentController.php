@@ -16,6 +16,17 @@ class PlotBookingPaymentController extends Controller
         private readonly PlotBookingService $bookings = new PlotBookingService(),
     ) {}
 
+    public function create(string $bookingUuid)
+    {
+        $company = app('currentCompany');
+        $booking = PlotBooking::forCompany($company->id)
+            ->with(['plot', 'customer', 'installments'])
+            ->where('uuid', $bookingUuid)
+            ->firstOrFail();
+
+        return view('contents.property.bookings.pay', compact('booking'));
+    }
+
     public function store(Request $request, string $bookingUuid)
     {
         $company = app('currentCompany');
