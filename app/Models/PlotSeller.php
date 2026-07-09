@@ -18,6 +18,9 @@ class PlotSeller extends Model
         'name',
         'phone',
         'nid',
+        'nid_front',
+        'nid_back',
+        'photo',
         'address',
     ];
 

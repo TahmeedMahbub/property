@@ -17,7 +17,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ url('/plots') }}">
+                <form method="POST" action="{{ url('/plots') }}" enctype="multipart/form-data">
                     @csrf
                     @include('contents.property.plots._form')
                     <div class="d-flex gap-2">

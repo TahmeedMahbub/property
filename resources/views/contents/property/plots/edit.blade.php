@@ -17,7 +17,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form method="POST" action="{{ url("/plots/{$plot->uuid}") }}">
+                <form method="POST" action="{{ url("/plots/{$plot->uuid}") }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
                     @include('contents.property.plots._form')

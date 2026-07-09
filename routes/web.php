@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\LoanRepaymentController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\PlotController;
 use App\Http\Controllers\Web\PlotDocumentController;
+use App\Http\Controllers\Web\PlotPersonImageController;
 use App\Http\Controllers\Web\PlotPaymentController;
 use App\Http\Controllers\Web\PlotReportController;
 use App\Http\Controllers\Web\ProfileController;
@@ -91,6 +92,7 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     // Plots (land acquisition)
     Route::get('/plots/reports', [PlotReportController::class, 'index'])->name('plots.reports');
     Route::get('/plots/reports/{type}', [PlotReportController::class, 'show'])->name('plots.reports.show');
+    Route::get('/plots/people/{type}/{uuid}/{field}', [PlotPersonImageController::class, 'show'])->name('plots.people.image');
     Route::get('/plots/{plot}/payments/create', [PlotPaymentController::class, 'create'])->name('plots.payments.create');
     Route::post('/plots/{plot}/payments', [PlotPaymentController::class, 'store'])->name('plots.payments.store');
     Route::delete('/plots/{plot}/payments/{payment}', [PlotPaymentController::class, 'destroy'])->name('plots.payments.destroy');

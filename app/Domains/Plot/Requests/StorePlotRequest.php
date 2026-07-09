@@ -14,7 +14,7 @@ class StorePlotRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'plot_code' => ['required', 'string', 'max:100'],
+            'plot_code' => ['nullable', 'string', 'max:100'],
             'plot_name' => ['required', 'string', 'max:255'],
             'status' => ['required', 'in:prospect,negotiation,bayna_done,registration_pending,registration_complete,development_ready'],
 
@@ -57,6 +57,12 @@ class StorePlotRequest extends FormRequest
             'sellers.*.phone' => ['nullable', 'string', 'max:50'],
             'sellers.*.nid' => ['nullable', 'string', 'max:50'],
             'sellers.*.address' => ['nullable', 'string', 'max:500'],
+            'sellers.*.nid_front' => ['nullable', 'image', 'max:3072'],
+            'sellers.*.nid_back' => ['nullable', 'image', 'max:3072'],
+            'sellers.*.photo' => ['nullable', 'image', 'max:3072'],
+            'sellers.*.nid_front_existing' => ['nullable', 'string', 'max:255'],
+            'sellers.*.nid_back_existing' => ['nullable', 'string', 'max:255'],
+            'sellers.*.photo_existing' => ['nullable', 'string', 'max:255'],
 
             // Legal land owners (separate from company shareholders)
             'owners' => ['nullable', 'array'],
@@ -65,6 +71,12 @@ class StorePlotRequest extends FormRequest
             'owners.*.nid' => ['nullable', 'string', 'max:50'],
             'owners.*.address' => ['nullable', 'string', 'max:500'],
             'owners.*.ownership_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'owners.*.nid_front' => ['nullable', 'image', 'max:3072'],
+            'owners.*.nid_back' => ['nullable', 'image', 'max:3072'],
+            'owners.*.photo' => ['nullable', 'image', 'max:3072'],
+            'owners.*.nid_front_existing' => ['nullable', 'string', 'max:255'],
+            'owners.*.nid_back_existing' => ['nullable', 'string', 'max:255'],
+            'owners.*.photo_existing' => ['nullable', 'string', 'max:255'],
         ];
     }
 

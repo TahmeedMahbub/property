@@ -2,14 +2,19 @@
     $plot = $plot ?? null;
     $val = fn ($field, $default = null) => old($field, $plot->$field ?? $default);
     $oldSellers = old('sellers', $plot?->sellers?->map(fn ($s) => [
-        'name' => $s->name, 'phone' => $s->phone, 'nid' => $s->nid, 'address' => $s->address,
+        'uuid' => $s->uuid, 'name' => $s->name, 'phone' => $s->phone, 'nid' => $s->nid, 'address' => $s->address,
+        'nid_front' => $s->nid_front, 'nid_back' => $s->nid_back, 'photo' => $s->photo,
     ])->values()->all() ?? []);
     $oldOwners = old('owners', $plot?->owners?->map(fn ($o) => [
-        'name' => $o->name, 'phone' => $o->phone, 'nid' => $o->nid,
+        'uuid' => $o->uuid, 'name' => $o->name, 'phone' => $o->phone, 'nid' => $o->nid,
         'address' => $o->address, 'ownership_percentage' => $o->ownership_percentage,
+        'nid_front' => $o->nid_front, 'nid_back' => $o->nid_back, 'photo' => $o->photo,
     ])->values()->all() ?? []);
     if (empty($oldSellers)) { $oldSellers = [['name' => '', 'phone' => '', 'nid' => '', 'address' => '']]; }
     if (empty($oldOwners)) { $oldOwners = [['name' => '', 'phone' => '', 'nid' => '', 'address' => '', 'ownership_percentage' => '']]; }
+
+    // Existing stored path for a person's image field (survives validation failures).
+    $existingImage = fn ($person, $field) => $person[$field . '_existing'] ?? $person[$field] ?? null;
 
     // "Paid" checkboxes: which cost fields already have an auto-generated cash-out payment.
     $fieldPaymentTypes = \App\Domains\Plot\Services\PlotService::FIELD_PAYMENT_TYPES;
@@ -20,6 +25,18 @@
             return ! empty($old[$field]);
         }
         return in_array($fieldPaymentTypes[$field] ?? null, $paidTypes, true);
+    };
+@endphp
+
+@php
+    // Reusable NID/photo upload sub-row for a seller or owner.
+    // $group = 'sellers' | 'owners', $type = 'seller' | 'owner'
+@endphp
+@php
+    $imageRow = function ($group, $type, $i, $person) use ($existingImage) {
+        return view('contents.property.plots._person_images', [
+            'group' => $group, 'type' => $type, 'i' => $i, 'person' => $person, 'existingImage' => $existingImage,
+        ])->render();
     };
 @endphp
 
@@ -36,13 +53,13 @@
 {{-- Basic information --}}
 <h6 class="fw-bold text-primary mb-3"><i class="mdi mdi-information-outline me-1"></i>Basic Information</h6>
 <div class="row">
-    <div class="col-md-4 mb-3">
-        <label for="plot_code" class="form-label">Plot Code <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="plot_code" name="plot_code" value="{{ $val('plot_code') }}" required>
-    </div>
     <div class="col-md-5 mb-3">
         <label for="plot_name" class="form-label">Plot Name <span class="text-danger">*</span></label>
         <input type="text" class="form-control" id="plot_name" name="plot_name" value="{{ $val('plot_name') }}" required>
+    </div>
+    <div class="col-md-4 mb-3">
+        <label for="plot_code" class="form-label">Plot Code</label>
+        <input type="text" class="form-control" id="plot_code" name="plot_code" value="{{ $val('plot_code') }}" placeholder="Auto-generated if left blank">
     </div>
     <div class="col-md-3 mb-3">
         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
@@ -220,12 +237,15 @@
 </div>
 <div id="sellers-wrapper">
     @foreach ($oldSellers as $i => $seller)
-        <div class="row seller-row g-2 mb-2 align-items-end">
-            <div class="col-md-3"><label class="form-label small">Name</label><input type="text" class="form-control" name="sellers[{{ $i }}][name]" value="{{ $seller['name'] ?? '' }}"></div>
-            <div class="col-md-2"><label class="form-label small">Phone</label><input type="text" class="form-control" name="sellers[{{ $i }}][phone]" value="{{ $seller['phone'] ?? '' }}"></div>
-            <div class="col-md-3"><label class="form-label small">NID</label><input type="text" class="form-control" name="sellers[{{ $i }}][nid]" value="{{ $seller['nid'] ?? '' }}"></div>
-            <div class="col-md-3"><label class="form-label small">Address</label><input type="text" class="form-control" name="sellers[{{ $i }}][address]" value="{{ $seller['address'] ?? '' }}"></div>
-            <div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>
+        <div class="seller-row border rounded p-2 mb-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3"><label class="form-label small">Name</label><input type="text" class="form-control" name="sellers[{{ $i }}][name]" value="{{ $seller['name'] ?? '' }}"></div>
+                <div class="col-md-2"><label class="form-label small">Phone</label><input type="text" class="form-control" name="sellers[{{ $i }}][phone]" value="{{ $seller['phone'] ?? '' }}"></div>
+                <div class="col-md-3"><label class="form-label small">NID</label><input type="text" class="form-control" name="sellers[{{ $i }}][nid]" value="{{ $seller['nid'] ?? '' }}"></div>
+                <div class="col-md-3"><label class="form-label small">Address</label><input type="text" class="form-control" name="sellers[{{ $i }}][address]" value="{{ $seller['address'] ?? '' }}"></div>
+                <div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>
+            </div>
+            {!! $imageRow('sellers', 'seller', $i, $seller) !!}
         </div>
     @endforeach
 </div>
@@ -239,13 +259,16 @@
 <p class="text-muted small mb-3">Legal owners of the land with their ownership share. This is separate from company shareholders.</p>
 <div id="owners-wrapper">
     @foreach ($oldOwners as $i => $owner)
-        <div class="row owner-row g-2 mb-2 align-items-end">
-            <div class="col-md-3"><label class="form-label small">Name</label><input type="text" class="form-control" name="owners[{{ $i }}][name]" value="{{ $owner['name'] ?? '' }}"></div>
-            <div class="col-md-2"><label class="form-label small">Phone</label><input type="text" class="form-control" name="owners[{{ $i }}][phone]" value="{{ $owner['phone'] ?? '' }}"></div>
-            <div class="col-md-2"><label class="form-label small">NID</label><input type="text" class="form-control" name="owners[{{ $i }}][nid]" value="{{ $owner['nid'] ?? '' }}"></div>
-            <div class="col-md-2"><label class="form-label small">Address</label><input type="text" class="form-control" name="owners[{{ $i }}][address]" value="{{ $owner['address'] ?? '' }}"></div>
-            <div class="col-md-2"><label class="form-label small">Ownership %</label><input type="number" step="0.0001" min="0" max="100" class="form-control" name="owners[{{ $i }}][ownership_percentage]" value="{{ $owner['ownership_percentage'] ?? '' }}"></div>
-            <div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>
+        <div class="owner-row border rounded p-2 mb-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3"><label class="form-label small">Name</label><input type="text" class="form-control" name="owners[{{ $i }}][name]" value="{{ $owner['name'] ?? '' }}"></div>
+                <div class="col-md-2"><label class="form-label small">Phone</label><input type="text" class="form-control" name="owners[{{ $i }}][phone]" value="{{ $owner['phone'] ?? '' }}"></div>
+                <div class="col-md-2"><label class="form-label small">NID</label><input type="text" class="form-control" name="owners[{{ $i }}][nid]" value="{{ $owner['nid'] ?? '' }}"></div>
+                <div class="col-md-2"><label class="form-label small">Address</label><input type="text" class="form-control" name="owners[{{ $i }}][address]" value="{{ $owner['address'] ?? '' }}"></div>
+                <div class="col-md-2"><label class="form-label small">Ownership %</label><input type="number" step="0.0001" min="0" max="100" class="form-control" name="owners[{{ $i }}][ownership_percentage]" value="{{ $owner['ownership_percentage'] ?? '' }}"></div>
+                <div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>
+            </div>
+            {!! $imageRow('owners', 'owner', $i, $owner) !!}
         </div>
     @endforeach
 </div>
@@ -309,17 +332,32 @@
         return wrapper.querySelectorAll('.' + rowClass).length;
     }
 
+    function personImagesHtml(group, i) {
+        var fields = [['nid_front', 'NID Front'], ['nid_back', 'NID Back'], ['photo', 'Photo']];
+        var cols = fields.map(function (f) {
+            return '<div class="col-md-4">' +
+                '<label class="form-label small text-muted">' + f[1] + '</label>' +
+                '<input type="hidden" name="' + group + '[' + i + '][uuid]" value="">' +
+                '<input type="file" accept="image/*" class="form-control form-control-sm" name="' + group + '[' + i + '][' + f[0] + ']">' +
+                '</div>';
+        }).join('');
+        return '<div class="row g-2 mt-1">' + cols + '</div>';
+    }
+
     document.getElementById('add-seller').addEventListener('click', function () {
         var wrapper = document.getElementById('sellers-wrapper');
         var i = nextIndex(wrapper, 'seller-row');
         var row = document.createElement('div');
-        row.className = 'row seller-row g-2 mb-2 align-items-end';
+        row.className = 'seller-row border rounded p-2 mb-2';
         row.innerHTML =
+            '<div class="row g-2 align-items-end">' +
             '<div class="col-md-3"><input type="text" class="form-control" name="sellers[' + i + '][name]" placeholder="Name"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control" name="sellers[' + i + '][phone]" placeholder="Phone"></div>' +
             '<div class="col-md-3"><input type="text" class="form-control" name="sellers[' + i + '][nid]" placeholder="NID"></div>' +
             '<div class="col-md-3"><input type="text" class="form-control" name="sellers[' + i + '][address]" placeholder="Address"></div>' +
-            '<div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>';
+            '<div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>' +
+            '</div>' +
+            personImagesHtml('sellers', i);
         wrapper.appendChild(row);
     });
 
@@ -327,14 +365,17 @@
         var wrapper = document.getElementById('owners-wrapper');
         var i = nextIndex(wrapper, 'owner-row');
         var row = document.createElement('div');
-        row.className = 'row owner-row g-2 mb-2 align-items-end';
+        row.className = 'owner-row border rounded p-2 mb-2';
         row.innerHTML =
+            '<div class="row g-2 align-items-end">' +
             '<div class="col-md-3"><input type="text" class="form-control" name="owners[' + i + '][name]" placeholder="Name"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control" name="owners[' + i + '][phone]" placeholder="Phone"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control" name="owners[' + i + '][nid]" placeholder="NID"></div>' +
             '<div class="col-md-2"><input type="text" class="form-control" name="owners[' + i + '][address]" placeholder="Address"></div>' +
             '<div class="col-md-2"><input type="number" step="0.0001" min="0" max="100" class="form-control" name="owners[' + i + '][ownership_percentage]" placeholder="Ownership %"></div>' +
-            '<div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>';
+            '<div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>' +
+            '</div>' +
+            personImagesHtml('owners', i);
         wrapper.appendChild(row);
     });
 

@@ -124,16 +124,19 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
-                    <thead><tr><th>Name</th><th>Phone</th><th>NID</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Phone</th><th>NID</th><th>Images</th></tr></thead>
                     <tbody>
                         @forelse ($plot->sellers as $seller)
                             <tr>
                                 <td class="fw-medium">{{ $seller->name }}</td>
                                 <td>{{ $seller->phone ?: '—' }}</td>
                                 <td>{{ $seller->nid ?: '—' }}</td>
+                                <td>
+                                    @include('contents.property.plots._person_thumbs', ['type' => 'seller', 'person' => $seller])
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-center text-muted py-3">No sellers recorded.</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted py-3">No sellers recorded.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -150,16 +153,19 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-sm mb-0">
-                    <thead><tr><th>Name</th><th>Phone</th><th class="text-end">Ownership %</th></tr></thead>
+                    <thead><tr><th>Name</th><th>Phone</th><th>Images</th><th class="text-end">Ownership %</th></tr></thead>
                     <tbody>
                         @forelse ($plot->owners as $owner)
                             <tr>
                                 <td class="fw-medium">{{ $owner->name }}</td>
                                 <td>{{ $owner->phone ?: '—' }}</td>
+                                <td>
+                                    @include('contents.property.plots._person_thumbs', ['type' => 'owner', 'person' => $owner])
+                                </td>
                                 <td class="text-end">{{ rtrim(rtrim(number_format($owner->ownership_percentage, 4), '0'), '.') }}%</td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-center text-muted py-3">No legal owners recorded.</td></tr>
+                            <tr><td colspan="4" class="text-center text-muted py-3">No legal owners recorded.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

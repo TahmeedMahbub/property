@@ -22,6 +22,9 @@ class PlotOwner extends Model
         'name',
         'phone',
         'nid',
+        'nid_front',
+        'nid_back',
+        'photo',
         'address',
         'ownership_percentage',
     ];

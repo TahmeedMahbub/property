@@ -4,7 +4,9 @@ namespace App\Domains\Plot\Services;
 
 use App\Models\Plot;
 use App\Models\PlotPayment;
+use App\Services\DocumentStorageService;
 use App\Services\JournalService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -61,6 +63,10 @@ class PlotService
         $data['company_id'] = $companyId;
         $data['created_by'] = $data['created_by'] ?? Auth::id();
         $data['status'] = $data['status'] ?? 'prospect';
+
+        if (empty($data['plot_code'])) {
+            $data['plot_code'] = $this->generatePlotCode($companyId);
+        }
 
         return DB::transaction(function () use ($data, $sellers, $owners, $paid) {
             $plot = Plot::create($data);
@@ -227,6 +233,26 @@ class PlotService
     }
 
     /**
+     * Generate a unique sequential plot code for a company (e.g. PLOT-0001).
+     */
+    private function generatePlotCode(int $companyId): string
+    {
+        $count = Plot::withTrashed()->where('company_id', $companyId)->count();
+
+        do {
+            $count++;
+            $code = 'PLOT-' . str_pad((string) $count, 4, '0', STR_PAD_LEFT);
+        } while (
+            Plot::withTrashed()
+                ->where('company_id', $companyId)
+                ->where('plot_code', $code)
+                ->exists()
+        );
+
+        return $code;
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $sellers
      */
     private function syncSellers(Plot $plot, array $sellers): void
@@ -241,6 +267,9 @@ class PlotService
                 'phone' => $seller['phone'] ?? null,
                 'nid' => $seller['nid'] ?? null,
                 'address' => $seller['address'] ?? null,
+                'nid_front' => $this->resolvePersonFile($plot, $seller, 'nid_front'),
+                'nid_back' => $this->resolvePersonFile($plot, $seller, 'nid_back'),
+                'photo' => $this->resolvePersonFile($plot, $seller, 'photo'),
             ]);
         }
     }
@@ -261,7 +290,32 @@ class PlotService
                 'nid' => $owner['nid'] ?? null,
                 'address' => $owner['address'] ?? null,
                 'ownership_percentage' => $owner['ownership_percentage'] ?? 0,
+                'nid_front' => $this->resolvePersonFile($plot, $owner, 'nid_front'),
+                'nid_back' => $this->resolvePersonFile($plot, $owner, 'nid_back'),
+                'photo' => $this->resolvePersonFile($plot, $owner, 'photo'),
             ]);
         }
+    }
+
+    /**
+     * Resolve a seller/owner image field: upload a newly submitted file via the
+     * shared document storage, or keep the existing stored path on edit.
+     *
+     * @param  array<string, mixed>  $person
+     */
+    private function resolvePersonFile(Plot $plot, array $person, string $field): ?string
+    {
+        $file = $person[$field] ?? null;
+
+        if ($file instanceof UploadedFile) {
+            return (new DocumentStorageService())->upload(
+                $file,
+                "companies/{$plot->company_id}/plots/{$plot->id}/people",
+            )['path'];
+        }
+
+        $existing = $person[$field . '_existing'] ?? null;
+
+        return is_string($existing) && $existing !== '' ? $existing : null;
     }
 }
