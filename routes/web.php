@@ -11,6 +11,9 @@ use App\Http\Controllers\Web\LoanController;
 use App\Http\Controllers\Web\LoanReportController;
 use App\Http\Controllers\Web\LoanRepaymentController;
 use App\Http\Controllers\Web\MemberController;
+use App\Http\Controllers\Web\PlotBookingController;
+use App\Http\Controllers\Web\PlotBookingDocumentController;
+use App\Http\Controllers\Web\PlotBookingPaymentController;
 use App\Http\Controllers\Web\PlotController;
 use App\Http\Controllers\Web\PlotDocumentController;
 use App\Http\Controllers\Web\PlotPersonImageController;
@@ -18,6 +21,7 @@ use App\Http\Controllers\Web\PlotPaymentController;
 use App\Http\Controllers\Web\PlotReportController;
 use App\Http\Controllers\Web\ProfileController;
 use App\Http\Controllers\Web\ProjectController;
+use App\Http\Controllers\Web\PublicCustomerProfileController;
 use App\Http\Controllers\Web\ShareholderController;
 use App\Http\Controllers\Web\UnitController;
 use App\Http\Controllers\Web\UnitTypeController;
@@ -87,6 +91,8 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
 
     // Investors
     Route::resource('investors', InvestorController::class)->except(['show']);
+    Route::delete('/customers/{uuid}/documents/{document}', [CustomerController::class, 'destroyDocument'])->name('customers.documents.destroy');
+    Route::post('/customers/{uuid}/profile-link/regenerate', [CustomerController::class, 'regenerateProfileLink'])->name('customers.profile-link.regenerate');
     Route::resource('customers', CustomerController::class)->except(['show']);
 
     // Plots (land acquisition)
@@ -99,6 +105,13 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     Route::post('/plots/{plot}/documents', [PlotDocumentController::class, 'store'])->name('plots.documents.store');
     Route::delete('/plots/{plot}/documents/{document}', [PlotDocumentController::class, 'destroy'])->name('plots.documents.destroy');
     Route::resource('plots', PlotController::class);
+
+    // Plot Share Bookings (customer buys plot shares)
+    Route::post('/bookings/{booking}/payments', [PlotBookingPaymentController::class, 'store'])->name('bookings.payments.store');
+    Route::delete('/bookings/{booking}/payments/{payment}', [PlotBookingPaymentController::class, 'destroy'])->name('bookings.payments.destroy');
+    Route::post('/bookings/{booking}/documents', [PlotBookingDocumentController::class, 'store'])->name('bookings.documents.store');
+    Route::delete('/bookings/{booking}/documents/{document}', [PlotBookingDocumentController::class, 'destroy'])->name('bookings.documents.destroy');
+    Route::resource('bookings', PlotBookingController::class);
 
     // Loans
     Route::get('/loans/reports', [LoanReportController::class, 'index'])->name('loans.reports');
@@ -120,3 +133,15 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
 */
 Route::get('/documents/{document}/signed', [DocumentDownloadController::class, 'signedDownload'])
     ->name('documents.download');
+
+/*
+|--------------------------------------------------------------------------
+| Public Customer Profile Completion (no auth — secure token in URL)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/customer-profile/{token}', [PublicCustomerProfileController::class, 'show'])
+        ->name('customer-profile.show');
+    Route::post('/customer-profile/{token}', [PublicCustomerProfileController::class, 'update'])
+        ->name('customer-profile.update');
+});

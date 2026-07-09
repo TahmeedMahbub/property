@@ -13,7 +13,8 @@
             </ol>
         </nav>
 
-        <h4 class="fw-bold mb-3">Add Customer</h4>
+        <h4 class="fw-bold mb-1">Add Customer</h4>
+        <p class="text-muted mb-3">Just a name and mobile number is enough — you can add the rest later.</p>
 
         <div class="card">
             <div class="card-body">
@@ -27,66 +28,24 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ url('/customers') }}">
+                <form method="POST" action="{{ url('/customers') }}" enctype="multipart/form-data">
                     @csrf
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name"
-                                value="{{ old('name') }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
-                            <select class="form-select" id="type" name="type" required>
-                                <option value="individual" {{ old('type', 'individual') == 'individual' ? 'selected' : '' }}>Individual</option>
-                                <option value="business" {{ old('type') == 'business' ? 'selected' : '' }}>Business</option>
-                            </select>
-                        </div>
+                    @include('contents.property.customers._form', ['customer' => null])
+
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" value="1"
+                            id="generate_profile_link" name="generate_profile_link"
+                            {{ old('generate_profile_link') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="generate_profile_link">
+                            Generate Profile Completion Link
+                            <span class="text-muted small d-block">
+                                Creates a secure link (valid 30 days) the customer can use to complete their own profile.
+                            </span>
+                        </label>
                     </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="text" class="form-control" id="phone" name="phone"
-                                value="{{ old('phone') }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                value="{{ old('email') }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="company_name" class="form-label">Company Name</label>
-                            <input type="text" class="form-control" id="company_name" name="company_name"
-                                value="{{ old('company_name') }}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="address" name="address"
-                                value="{{ old('address') }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city"
-                                value="{{ old('city') }}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="2">{{ old('notes') }}</textarea>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">Save</button>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">Save Customer</button>
                         <a href="{{ url('/customers') }}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
                 </form>
@@ -95,3 +54,4 @@
     </div>
 </div>
 @endsection
+

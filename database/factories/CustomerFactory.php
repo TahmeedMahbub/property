@@ -25,7 +25,7 @@ class CustomerFactory extends Factory
             'city' => fake()->city(),
             'country' => 'Bangladesh',
             'type' => fake()->randomElement(['individual', 'business']),
-            'status' => 'active',
+            'status' => fake()->randomElement(['lead', 'customer', 'verified']),
         ];
     }
 }

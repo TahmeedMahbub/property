@@ -3,6 +3,10 @@
 @section('title', 'Edit Customer')
 
 @section('content')
+@php
+    $completion = $customer->profile_completion;
+    $barColor = $completion >= 100 ? 'success' : ($completion >= 50 ? 'info' : 'warning');
+@endphp
 <div class="row gy-4 justify-content-center">
     <div class="col-12 col-lg-8">
         <nav aria-label="breadcrumb">
@@ -14,6 +18,69 @@
         </nav>
 
         <h4 class="fw-bold mb-3">Edit Customer: {{ $customer->name }}</h4>
+
+        <div class="card mb-3">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-medium">Profile Completion</span>
+                    <span class="fw-bold text-{{ $barColor }}">{{ $completion }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-{{ $barColor }}" role="progressbar"
+                        style="width: {{ $completion }}%;" aria-valuenow="{{ $completion }}"
+                        aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Profile completion link management --}}
+        <div class="card mb-3">
+            <div class="card-body py-3">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="fw-medium d-block">Profile Completion Link</span>
+                        @if ($customer->profile_locked)
+                            <span class="badge bg-label-success">Verified &amp; Locked</span>
+                        @elseif ($customer->isProfileCompleted())
+                            <span class="badge bg-label-info">Submitted</span>
+                        @elseif (! $customer->hasProfileLink())
+                            <span class="badge bg-label-secondary">Not generated</span>
+                        @elseif ($customer->isProfileLinkExpired())
+                            <span class="badge bg-label-danger">Expired</span>
+                        @else
+                            <span class="badge bg-label-primary">Active</span>
+                        @endif
+                        @if ($customer->profile_link_expires_at)
+                            <small class="text-muted ms-1">
+                                Expires: {{ $customer->profile_link_expires_at->format('d M Y, h:i A') }}
+                            </small>
+                        @endif
+                    </div>
+                    <div class="d-flex gap-2">
+                        @if ($customer->hasProfileLink())
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                data-copy-link="{{ $customer->profile_link }}">
+                                <i class="mdi mdi-content-copy me-1"></i> Copy Profile Link
+                            </button>
+                        @endif
+                        <form method="POST"
+                            action="{{ route('customers.profile-link.regenerate', $customer->uuid) }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                <i class="mdi mdi-refresh me-1"></i>
+                                {{ $customer->hasProfileLink() ? 'Regenerate Profile Link' : 'Generate Profile Link' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @if ($customer->hasProfileLink())
+                    <div class="input-group input-group-sm mt-2">
+                        <input type="text" class="form-control" value="{{ $customer->profile_link }}" readonly
+                            onclick="this.select()">
+                    </div>
+                @endif
+            </div>
+        </div>
 
         <div class="card">
             <div class="card-body">
@@ -27,66 +94,12 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ url("/customers/{$customer->uuid}") }}">
+                <form method="POST" action="{{ url("/customers/{$customer->uuid}") }}" enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name"
-                                value="{{ old('name', $customer->name) }}" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="type" class="form-label">Type <span class="text-danger">*</span></label>
-                            <select class="form-select" id="type" name="type" required>
-                                <option value="individual" {{ old('type', $customer->type) == 'individual' ? 'selected' : '' }}>Individual</option>
-                                <option value="business" {{ old('type', $customer->type) == 'business' ? 'selected' : '' }}>Business</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="text" class="form-control" id="phone" name="phone"
-                                value="{{ old('phone', $customer->phone) }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email"
-                                value="{{ old('email', $customer->email) }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="company_name" class="form-label">Company Name</label>
-                            <input type="text" class="form-control" id="company_name" name="company_name"
-                                value="{{ old('company_name', $customer->company_name) }}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="address" name="address"
-                                value="{{ old('address', $customer->address) }}">
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city"
-                                value="{{ old('city', $customer->city) }}">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="notes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="2">{{ old('notes', $customer->notes) }}</textarea>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="active" {{ old('status', $customer->status) == 'active' ? 'selected' : '' }}>Active</option>
-                                <option value="inactive" {{ old('status', $customer->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
+                    @include('contents.property.customers._form', ['customer' => $customer])
+
+                    <div class="d-flex gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">Update</button>
                         <a href="{{ url('/customers') }}" class="btn btn-outline-secondary">Cancel</a>
                     </div>
@@ -95,4 +108,20 @@
         </div>
     </div>
 </div>
+
+{{-- Document removal forms (kept outside the main form to avoid nesting) --}}
+@foreach (\App\Models\Customer::DOCUMENT_TYPES as $type => $label)
+    @php $existingDoc = $customer->documentOfType($type); @endphp
+    @if ($existingDoc)
+        <form id="del_doc_{{ $type }}" method="POST"
+            action="{{ route('customers.documents.destroy', [$customer->uuid, $existingDoc->uuid]) }}"
+            class="d-none">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endif
+@endforeach
+
+@include('contents.property.customers._link_scripts')
 @endsection
+
