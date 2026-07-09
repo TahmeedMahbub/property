@@ -59,11 +59,20 @@
 {{-- Basic information --}}
 <h6 class="fw-bold text-primary mb-3"><i class="mdi mdi-information-outline me-1"></i>Basic Information</h6>
 <div class="row">
-    <div class="col-md-5 mb-3">
+    <div class="col-md-4 mb-3">
         <label for="plot_name" class="form-label">Plot Name <span class="text-danger">*</span></label>
         <input type="text" class="form-control" id="plot_name" name="plot_name" value="{{ $val('plot_name') }}" required>
     </div>
-    <div class="col-md-4 mb-3">
+    <div class="col-md-2 mb-3">
+        <label for="total_shares" class="form-label">Total Shares <span class="text-danger">*</span></label>
+        <input type="number" min="1" step="1" class="form-control" id="total_shares" name="total_shares" value="{{ $val('total_shares') }}" placeholder="e.g. 12" required>
+        @if ($plot && $plot->exists && $plot->total_shares)
+            <div class="form-text">{{ $plot->shares_sold }} booked · {{ $plot->shares_available }} available</div>
+        @else
+            <div class="form-text">Per share = per flat</div>
+        @endif
+    </div>
+    <div class="col-md-3 mb-3">
         <label for="plot_code" class="form-label">Plot Code</label>
         <input type="text" class="form-control" id="plot_code" name="plot_code" value="{{ $val('plot_code') }}" placeholder="Auto-generated if left blank">
     </div>
@@ -151,21 +160,6 @@
         </div>
     </div>
 </div>
-
-{{-- Share division (for customer bookings) --}}
-<hr>
-<h6 class="fw-bold text-primary mb-3"><i class="mdi mdi-home-city-outline me-1"></i>Share Division</h6>
-<p class="text-muted small mb-3">Divide this plot into predefined shares (per share = per flat) so customers can book them. The price per share is set later at booking time.</p>
-<div class="row">
-    <div class="col-md-4 mb-3">
-        <label for="total_shares" class="form-label">Total Shares</label>
-        <input type="number" min="0" step="1" class="form-control" id="total_shares" name="total_shares" value="{{ $val('total_shares') }}" placeholder="e.g. 8">
-        @if ($plot && $plot->exists && $plot->total_shares)
-            <div class="form-text">{{ $plot->shares_sold }} booked · {{ $plot->shares_available }} available</div>
-        @endif
-    </div>
-</div>
-
 
 {{-- Purchase information --}}
 <hr>

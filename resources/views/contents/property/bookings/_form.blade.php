@@ -143,7 +143,6 @@
     <h6 class="fw-bold text-primary mb-0"><i class="mdi mdi-calendar-clock-outline me-1"></i>Installment Schedule</h6>
     <button type="button" class="btn btn-sm btn-outline-primary" id="add-installment"><i class="mdi mdi-plus"></i> Add Installment</button>
 </div>
-<p class="text-muted small mb-3">Manually add the booking money and each due installment with its date and amount.</p>
 <div id="installments-wrapper">
     @foreach ($oldInstallments as $i => $inst)
         <div class="installment-row border rounded p-2 mb-2">

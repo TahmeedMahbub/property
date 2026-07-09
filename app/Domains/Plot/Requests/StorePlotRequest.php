@@ -50,7 +50,7 @@ class StorePlotRequest extends FormRequest
             'other_cost' => ['nullable', 'numeric', 'min:0'],
 
             // Share division (per share = per flat) for customer bookings
-            'total_shares' => ['nullable', 'integer', 'min:0'],
+            'total_shares' => ['required', 'integer', 'min:1'],
 
             // "Paid" flags per cost field (records a cash-out payment when checked)
             'paid' => ['nullable', 'array'],
