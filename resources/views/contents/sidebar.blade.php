@@ -36,7 +36,7 @@
         @php
             $propertyActive = request()->is('unit-types*') || request()->is('buildings*')
                 || request()->is('floors*') || request()->is('units*') || request()->is('projects*')
-                || request()->is('plots*');
+                || request()->is('plots*') || request()->is('bookings*');
         @endphp
         <li class="menu-item {{ $propertyActive ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -52,6 +52,11 @@
                 <li class="menu-item {{ request()->is('plots*') ? 'active' : '' }}">
                     <a href="{{ url('/plots') }}" class="menu-link">
                         <div>Plots</div>
+                    </a>
+                </li>
+                <li class="menu-item {{ request()->is('bookings*') ? 'active' : '' }}">
+                    <a href="{{ url('/bookings') }}" class="menu-link">
+                        <div>Bookings</div>
                     </a>
                 </li>
                 <li class="menu-item {{ request()->is('unit-types*') ? 'active' : '' }}">
