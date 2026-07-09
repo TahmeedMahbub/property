@@ -62,12 +62,13 @@ class DocumentStorageService
     {
         $disk = $document->disk ?? $this->disk;
 
+        // Pass disposition "inline" so streamDownload does not force an
+        // attachment (which would make PDFs download instead of render).
         return response()->streamDownload(function () use ($disk, $document) {
             echo Storage::disk($disk)->get($document->file_path);
         }, $document->file_name, [
             'Content-Type' => $document->mime_type,
-            'Content-Disposition' => 'inline; filename="' . $document->file_name . '"',
-        ]);
+        ], 'inline');
     }
 
     /**

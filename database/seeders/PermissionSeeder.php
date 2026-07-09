@@ -43,6 +43,11 @@ class PermissionSeeder extends Seeder
             ['name' => 'Manage Plots', 'slug' => 'plots.manage', 'group' => 'plots'],
             ['name' => 'Delete Plots', 'slug' => 'plots.delete', 'group' => 'plots'],
 
+            // Plot Share Bookings (customer purchases)
+            ['name' => 'View Bookings', 'slug' => 'bookings.view', 'group' => 'bookings'],
+            ['name' => 'Manage Bookings', 'slug' => 'bookings.manage', 'group' => 'bookings'],
+            ['name' => 'Delete Bookings', 'slug' => 'bookings.delete', 'group' => 'bookings'],
+
             // Employees
             ['name' => 'View Employees', 'slug' => 'employees.view', 'group' => 'employees'],
             ['name' => 'Manage Employees', 'slug' => 'employees.manage', 'group' => 'employees'],

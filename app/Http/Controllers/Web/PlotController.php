@@ -7,6 +7,7 @@ use App\Domains\Plot\Requests\UpdatePlotRequest;
 use App\Domains\Plot\Services\PlotReportService;
 use App\Domains\Plot\Services\PlotService;
 use App\Http\Controllers\Controller;
+use App\Models\DocumentCategory;
 use App\Models\Plot;
 use Illuminate\Http\Request;
 
@@ -44,7 +45,9 @@ class PlotController extends Controller
 
     public function create()
     {
-        return view('contents.property.plots.create');
+        $documentCategories = $this->documentCategories();
+
+        return view('contents.property.plots.create', compact('documentCategories'));
     }
 
     public function store(StorePlotRequest $request)
@@ -66,12 +69,14 @@ class PlotController extends Controller
                 'owners',
                 'creator',
                 'payments' => fn ($q) => $q->latest('payment_date')->latest('id'),
-                'documents' => fn ($q) => $q->latest(),
+                'documents' => fn ($q) => $q->with('category')->latest(),
             ])
             ->where('uuid', $uuid)
             ->firstOrFail();
 
-        return view('contents.property.plots.show', compact('plot'));
+        $documentCategories = $this->documentCategories();
+
+        return view('contents.property.plots.show', compact('plot', 'documentCategories'));
     }
 
     public function edit(string $uuid)
@@ -79,11 +84,17 @@ class PlotController extends Controller
         $company = app('currentCompany');
 
         $plot = Plot::forCompany($company->id)
-            ->with(['sellers', 'owners'])
+            ->with([
+                'sellers',
+                'owners',
+                'documents' => fn ($q) => $q->with('category')->latest(),
+            ])
             ->where('uuid', $uuid)
             ->firstOrFail();
 
-        return view('contents.property.plots.edit', compact('plot'));
+        $documentCategories = $this->documentCategories();
+
+        return view('contents.property.plots.edit', compact('plot', 'documentCategories'));
     }
 
     public function update(UpdatePlotRequest $request, string $uuid)
@@ -106,5 +117,18 @@ class PlotController extends Controller
         $this->plots->delete($plot);
 
         return redirect('/plots')->with('success', 'Plot deleted successfully.');
+    }
+
+    /**
+     * Document categories (grouped parent → children) available to the current
+     * company. These drive the document upload selects on the plot forms.
+     */
+    private function documentCategories()
+    {
+        return DocumentCategory::forCompany(app('currentCompany')->id)
+            ->roots()
+            ->with(['children' => fn ($q) => $q->orderBy('sort_order')])
+            ->orderBy('sort_order')
+            ->get();
     }
 }

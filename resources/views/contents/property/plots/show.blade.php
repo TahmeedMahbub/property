@@ -227,54 +227,73 @@
         <div class="card">
             <div class="card-header"><h6 class="mb-0">Documents</h6></div>
             <div class="card-body">
-                <form method="POST" action="{{ url("/plots/{$plot->uuid}/documents") }}" enctype="multipart/form-data" class="row g-2 align-items-end mb-3">
+                <form method="POST" action="{{ url("/plots/{$plot->uuid}/documents") }}" enctype="multipart/form-data" class="row g-2 mb-3">
                     @csrf
                     <div class="col-md-4">
-                        <label class="form-label small">Document Type</label>
-                        <select name="document_type" class="form-select" required>
-                            @foreach (\App\Models\Plot::DOCUMENT_TYPES as $v => $l)
-                                <option value="{{ $v }}">{{ $l }}</option>
+                        <label class="form-label small">Category <span class="text-danger">*</span></label>
+                        <select name="category_id" id="doc-category" class="form-select" required>
+                            <option value="">— Select category —</option>
+                            @foreach ($documentCategories as $cat)
+                                @if ($cat->children->isNotEmpty())
+                                    <optgroup label="{{ $cat->name }}">
+                                        @foreach ($cat->children as $child)
+                                            <option value="{{ $child->id }}">{{ $child->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @else
+                                    <option value="{{ $cat->id }}" data-other="{{ $cat->slug === 'other-document' ? '1' : '0' }}">{{ $cat->name }}</option>
+                                @endif
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">Title (optional)</label>
-                        <input type="text" name="title" class="form-control" placeholder="e.g. Deed 2024">
+                    <div class="col-md-4">
+                        <label class="form-label small">Title <span class="text-danger d-none" id="doc-title-req">*</span></label>
+                        <input type="text" name="title" id="doc-title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title') }}" placeholder="Defaults to category name">
+                        @error('title') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label small">File</label>
-                        <input type="file" name="file" class="form-control" required>
+                    <div class="col-md-4">
+                        <label class="form-label small">File <span class="text-danger">*</span></label>
+                        <input type="file" name="file" class="form-control @error('file') is-invalid @enderror" accept="image/*,application/pdf" required>
+                        <small class="text-muted">Image or PDF, max 3 MB.</small>
+                        @error('file') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100"><i class="mdi mdi-upload me-1"></i>Upload</button>
+                    <div class="col-12">
+                        <label class="form-label small">Description <span class="text-danger d-none" id="doc-desc-req">*</span></label>
+                        <textarea name="description" id="doc-description" rows="2" class="form-control @error('description') is-invalid @enderror" placeholder="Notes about this document">{{ old('description') }}</textarea>
+                        @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary"><i class="mdi mdi-upload me-1"></i>Upload</button>
                     </div>
                 </form>
 
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
-                        <thead><tr><th>Title</th><th>Type</th><th>File</th><th class="text-end">Actions</th></tr></thead>
+                        <thead><tr><th>Preview</th><th>Title</th><th>Category</th><th>Description</th><th>File</th><th class="text-end">Actions</th></tr></thead>
                         <tbody>
                             @forelse ($plot->documents as $doc)
                                 <tr>
+                                    <td>@include('contents.property.plots._document_thumb', ['doc' => $doc])</td>
                                     <td class="fw-medium">{{ $doc->title }}</td>
-                                    <td>{{ \App\Models\Plot::DOCUMENT_TYPES[$doc->metadata['plot_document_type'] ?? ''] ?? '—' }}</td>
+                                    <td>{{ $doc->category?->name ?? '—' }}</td>
+                                    <td>{{ \Illuminate\Support\Str::limit($doc->description, 60) ?: '—' }}</td>
                                     <td>{{ $doc->file_name }}</td>
                                     <td class="text-end">
-                                        <a href="{{ url("/documents/{$doc->uuid}/download") }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill">
+                                        <a href="{{ url("/documents/{$doc->uuid}/download") }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" title="Download">
                                             <i class="mdi mdi-download-outline"></i>
                                         </a>
                                         <form method="POST" action="{{ url("/plots/{$plot->uuid}/documents/{$doc->uuid}") }}" class="d-inline"
                                             onsubmit="return confirm('Delete this document?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill">
+                                            <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill" title="Delete">
                                                 <i class="mdi mdi-delete-outline"></i>
                                             </button>
                                         </form>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center text-muted py-3">No documents uploaded yet.</td></tr>
+                                <tr><td colspan="6" class="text-center text-muted py-3">No documents uploaded yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -284,3 +303,28 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    var sel = document.getElementById('doc-category');
+    if (!sel) { return; }
+    var title = document.getElementById('doc-title');
+    var desc = document.getElementById('doc-description');
+    var titleReq = document.getElementById('doc-title-req');
+    var descReq = document.getElementById('doc-desc-req');
+
+    function sync() {
+        var opt = sel.options[sel.selectedIndex];
+        var isOther = !!(opt && opt.getAttribute('data-other') === '1');
+        title.required = isOther;
+        desc.required = isOther;
+        titleReq.classList.toggle('d-none', !isOther);
+        descReq.classList.toggle('d-none', !isOther);
+    }
+
+    sel.addEventListener('change', sync);
+    sync();
+})();
+</script>
+@endpush

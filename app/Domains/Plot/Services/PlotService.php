@@ -2,6 +2,8 @@
 
 namespace App\Domains\Plot\Services;
 
+use App\Models\Document;
+use App\Models\DocumentCategory;
 use App\Models\Plot;
 use App\Models\PlotPayment;
 use App\Services\DocumentStorageService;
@@ -58,7 +60,8 @@ class PlotService
         $sellers = $data['sellers'] ?? [];
         $owners = $data['owners'] ?? [];
         $paid = $data['paid'] ?? [];
-        unset($data['sellers'], $data['owners'], $data['paid']);
+        $documents = $data['documents'] ?? [];
+        unset($data['sellers'], $data['owners'], $data['paid'], $data['documents']);
 
         $data['company_id'] = $companyId;
         $data['created_by'] = $data['created_by'] ?? Auth::id();
@@ -68,11 +71,12 @@ class PlotService
             $data['plot_code'] = $this->generatePlotCode($companyId);
         }
 
-        return DB::transaction(function () use ($data, $sellers, $owners, $paid) {
+        return DB::transaction(function () use ($data, $sellers, $owners, $paid, $documents) {
             $plot = Plot::create($data);
             $this->syncSellers($plot, $sellers);
             $this->syncOwners($plot, $owners);
             $this->syncFormPayments($plot, $paid);
+            $this->syncFormDocuments($plot, $documents);
 
             return $plot;
         });
@@ -88,9 +92,10 @@ class PlotService
         $sellers = $data['sellers'] ?? null;
         $owners = $data['owners'] ?? null;
         $paid = $data['paid'] ?? [];
-        unset($data['sellers'], $data['owners'], $data['paid']);
+        $documents = $data['documents'] ?? [];
+        unset($data['sellers'], $data['owners'], $data['paid'], $data['documents']);
 
-        return DB::transaction(function () use ($plot, $data, $sellers, $owners, $paid) {
+        return DB::transaction(function () use ($plot, $data, $sellers, $owners, $paid, $documents) {
             $plot->update($data);
 
             if ($sellers !== null) {
@@ -104,6 +109,7 @@ class PlotService
             }
 
             $this->syncFormPayments($plot, $paid);
+            $this->syncFormDocuments($plot, $documents);
 
             return $plot->refresh();
         });
@@ -229,6 +235,47 @@ class PlotService
 
                 $payment->delete();
             }
+        }
+    }
+
+    /**
+     * Upload documents submitted from the plot form and attach them to the plot
+     * via the existing polymorphic document module. Rows without a file are
+     * skipped. New uploads are appended (existing documents are untouched).
+     *
+     * @param  array<int, array<string, mixed>>  $documents
+     */
+    private function syncFormDocuments(Plot $plot, array $documents): void
+    {
+        foreach ($documents as $document) {
+            $file = $document['file'] ?? null;
+
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
+            $categoryId = $document['category_id'] ?? null;
+            $category = $categoryId ? DocumentCategory::forCompany($plot->company_id)->find($categoryId) : null;
+
+            $meta = (new DocumentStorageService())->upload(
+                $file,
+                "companies/{$plot->company_id}/plots/{$plot->id}",
+            );
+
+            Document::create([
+                'company_id' => $plot->company_id,
+                'category_id' => $category?->id,
+                'documentable_type' => Plot::class,
+                'documentable_id' => $plot->id,
+                'title' => ($document['title'] ?? null) ?: ($category->name ?? $meta['file_name']),
+                'description' => $document['description'] ?? null,
+                'file_name' => $meta['file_name'],
+                'file_path' => $meta['path'],
+                'file_size' => $meta['size'],
+                'mime_type' => $meta['mime_type'],
+                'disk' => $meta['disk'],
+                'uploaded_by' => Auth::id(),
+            ]);
         }
     }
 

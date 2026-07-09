@@ -1,6 +1,12 @@
 @php
     $plot = $plot ?? null;
     $val = fn ($field, $default = null) => old($field, $plot->$field ?? $default);
+    $documentCategories = $documentCategories ?? collect();
+    $oldDocuments = old('documents', []);
+    if (empty($oldDocuments)) { $oldDocuments = [[]]; }
+    $categoryOptionsHtml = $documentCategories->isNotEmpty()
+        ? view('contents.property.plots._document_options', ['documentCategories' => $documentCategories])->render()
+        : '';
     $oldSellers = old('sellers', $plot?->sellers?->map(fn ($s) => [
         'uuid' => $s->uuid, 'name' => $s->name, 'phone' => $s->phone, 'nid' => $s->nid, 'address' => $s->address,
         'nid_front' => $s->nid_front, 'nid_back' => $s->nid_back, 'photo' => $s->photo,
@@ -146,6 +152,21 @@
     </div>
 </div>
 
+{{-- Share division (for customer bookings) --}}
+<hr>
+<h6 class="fw-bold text-primary mb-3"><i class="mdi mdi-home-city-outline me-1"></i>Share Division</h6>
+<p class="text-muted small mb-3">Divide this plot into predefined shares (per share = per flat) so customers can book them. The price per share is set later at booking time.</p>
+<div class="row">
+    <div class="col-md-4 mb-3">
+        <label for="total_shares" class="form-label">Total Shares</label>
+        <input type="number" min="0" step="1" class="form-control" id="total_shares" name="total_shares" value="{{ $val('total_shares') }}" placeholder="e.g. 8">
+        @if ($plot && $plot->exists && $plot->total_shares)
+            <div class="form-text">{{ $plot->shares_sold }} booked · {{ $plot->shares_available }} available</div>
+        @endif
+    </div>
+</div>
+
+
 {{-- Purchase information --}}
 <hr>
 <h6 class="fw-bold text-primary mb-3"><i class="mdi mdi-cash-multiple me-1"></i>Purchase Information</h6>
@@ -280,6 +301,68 @@
     <textarea class="form-control" id="notes" name="notes" rows="2">{{ $val('notes') }}</textarea>
 </div>
 
+{{-- Documents --}}
+<hr>
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h6 class="fw-bold text-primary mb-0"><i class="mdi mdi-file-upload-outline me-1"></i>Documents</h6>
+    <button type="button" class="btn btn-sm btn-outline-primary" id="add-document"><i class="mdi mdi-plus"></i> Add Document</button>
+</div>
+<p class="text-muted small mb-3">Image or PDF, max 3&nbsp;MB each. Selecting <em>Other Document</em> requires a title and description.</p>
+
+@if ($plot && $plot->relationLoaded('documents') && $plot->documents->isNotEmpty())
+    <div class="table-responsive mb-3">
+        <table class="table table-sm mb-0">
+            <thead><tr><th>Preview</th><th>Title</th><th>Category</th><th>File</th><th class="text-end">Download</th></tr></thead>
+            <tbody>
+                @foreach ($plot->documents as $doc)
+                    <tr>
+                        <td>@include('contents.property.plots._document_thumb', ['doc' => $doc])</td>
+                        <td class="fw-medium">{{ $doc->title }}</td>
+                        <td>{{ $doc->category?->name ?? '—' }}</td>
+                        <td>{{ $doc->file_name }}</td>
+                        <td class="text-end">
+                            <a href="{{ url("/documents/{$doc->uuid}/download") }}" class="btn btn-sm btn-icon btn-text-secondary rounded-pill" title="Download">
+                                <i class="mdi mdi-download-outline"></i>
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
+
+<div id="documents-wrapper">
+    @foreach ($oldDocuments as $i => $doc)
+        <div class="document-row border rounded p-2 mb-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small">Category</label>
+                    <select class="form-select" name="documents[{{ $i }}][category_id]">
+                        <option value="">— Select —</option>
+                        {!! view('contents.property.plots._document_options', ['documentCategories' => $documentCategories, 'selected' => $doc['category_id'] ?? null])->render() !!}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Title</label>
+                    <input type="text" class="form-control" name="documents[{{ $i }}][title]" value="{{ $doc['title'] ?? '' }}" placeholder="Defaults to category name">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small">File</label>
+                    <input type="file" class="form-control" name="documents[{{ $i }}][file]" accept="image/*,application/pdf">
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small">Description</label>
+                    <textarea class="form-control" name="documents[{{ $i }}][description]" rows="1" placeholder="Notes about this document">{{ $doc['description'] ?? '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    @endforeach
+</div>
+
 @push('scripts')
 <script>
 (function () {
@@ -382,10 +465,35 @@
     document.addEventListener('click', function (e) {
         var btn = e.target.closest('.remove-row');
         if (btn) {
-            var row = btn.closest('.seller-row, .owner-row');
+            var row = btn.closest('.seller-row, .owner-row, .document-row');
             if (row) row.remove();
         }
     });
+
+    // Repeater rows for documents.
+    var docCategoryOptions = @json($categoryOptionsHtml ?? '');
+    var addDocumentBtn = document.getElementById('add-document');
+    if (addDocumentBtn) {
+        addDocumentBtn.addEventListener('click', function () {
+            var wrapper = document.getElementById('documents-wrapper');
+            var i = wrapper.querySelectorAll('.document-row').length;
+            var row = document.createElement('div');
+            row.className = 'document-row border rounded p-2 mb-2';
+            row.innerHTML =
+                '<div class="row g-2 align-items-end">' +
+                '<div class="col-md-3"><label class="form-label small">Category</label>' +
+                '<select class="form-select" name="documents[' + i + '][category_id]"><option value="">— Select —</option>' + docCategoryOptions + '</select></div>' +
+                '<div class="col-md-3"><label class="form-label small">Title</label>' +
+                '<input type="text" class="form-control" name="documents[' + i + '][title]" placeholder="Defaults to category name"></div>' +
+                '<div class="col-md-5"><label class="form-label small">File</label>' +
+                '<input type="file" class="form-control" name="documents[' + i + '][file]" accept="image/*,application/pdf"></div>' +
+                '<div class="col-md-1"><button type="button" class="btn btn-icon btn-outline-danger remove-row"><i class="mdi mdi-delete-outline"></i></button></div>' +
+                '<div class="col-12"><label class="form-label small">Description</label>' +
+                '<textarea class="form-control" name="documents[' + i + '][description]" rows="1" placeholder="Notes about this document"></textarea></div>' +
+                '</div>';
+            wrapper.appendChild(row);
+        });
+    }
 })();
 </script>
 @endpush

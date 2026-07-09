@@ -42,6 +42,7 @@ class Plot extends Model
         'legal_cost',
         'broker_cost',
         'other_cost',
+        'total_shares',
         'notes',
     ];
 
@@ -64,22 +65,6 @@ class Plot extends Model
         'development_ready',
     ];
 
-    /** Supported document types (uses the existing polymorphic document module). */
-    public const DOCUMENT_TYPES = [
-        'bayna_agreement' => 'Bayna Agreement',
-        'sale_deed' => 'Sale Deed',
-        'previous_deed' => 'Previous Deed',
-        'khatian' => 'Khatian',
-        'porcha' => 'Porcha',
-        'mutation' => 'Mutation',
-        'mouza_map' => 'Mouza Map',
-        'tax_receipt' => 'Tax Receipt',
-        'nid_copy' => 'NID Copy',
-        'power_of_attorney' => 'Power Of Attorney',
-        'legal_opinion' => 'Legal Opinion',
-        'other' => 'Other',
-    ];
-
     protected function casts(): array
     {
         return [
@@ -92,6 +77,7 @@ class Plot extends Model
             'legal_cost' => 'decimal:2',
             'broker_cost' => 'decimal:2',
             'other_cost' => 'decimal:2',
+            'total_shares' => 'integer',
         ];
     }
 
@@ -120,6 +106,11 @@ class Plot extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(PlotPayment::class);
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(PlotBooking::class);
     }
 
     public function documents(): MorphMany
@@ -179,6 +170,20 @@ class Plot extends Model
         $factor = self::LAND_UNIT_TO_KATHA[$this->land_unit] ?? 1.0;
 
         return round((float) $this->land_size * $factor, 4);
+    }
+
+    /** Shares already booked (excludes cancelled bookings). */
+    public function getSharesSoldAttribute(): int
+    {
+        return (int) $this->bookings
+            ->where('status', '!=', 'cancelled')
+            ->sum('shares_count');
+    }
+
+    /** Shares still available to book. */
+    public function getSharesAvailableAttribute(): int
+    {
+        return max(0, (int) ($this->total_shares ?? 0) - $this->shares_sold);
     }
 
     /** Whether the bayna step is still pending. */
