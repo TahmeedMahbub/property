@@ -17,6 +17,9 @@
                 <a href="{{ url("/bookings/{$booking->uuid}/payments/create") }}" class="btn btn-sm btn-primary">
                     <i class="mdi mdi-cash-plus me-1"></i>Record Payment
                 </a>
+                <a href="{{ url("/bookings/{$booking->uuid}/expenses/create") }}" class="btn btn-sm btn-outline-danger">
+                    <i class="mdi mdi-cash-minus me-1"></i>Record Expense
+                </a>
                 <a href="{{ url("/bookings/{$booking->uuid}/edit") }}" class="btn btn-sm btn-outline-primary">
                     <i class="mdi mdi-pencil-outline me-1"></i>Edit
                 </a>
@@ -209,6 +212,59 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="7" class="text-center text-muted py-4">No payments recorded yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Expenses --}}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h6 class="mb-0">Expense History</h6>
+                <a href="{{ url("/bookings/{$booking->uuid}/expenses/create") }}" class="btn btn-sm btn-outline-danger">
+                    <i class="mdi mdi-cash-minus me-1"></i>Record Expense
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th class="d-none d-md-table-cell">Title</th>
+                                <th class="text-end">Amount</th>
+                                <th class="d-none d-md-table-cell">Method</th>
+                                <th class="d-none d-md-table-cell">Reference</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($booking->expenses as $expense)
+                                <tr>
+                                    <td class="text-nowrap">{{ $expense->expense_date->format('d M Y') }}</td>
+                                    <td><span class="badge bg-label-danger">{{ \App\Models\Expense::CATEGORIES[$expense->category] ?? ucfirst($expense->category) }}</span></td>
+                                    <td class="d-none d-md-table-cell">{{ $expense->title ?: '—' }}</td>
+                                    <td class="text-end fw-medium">৳{{ number_format($expense->amount, 2) }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $expense->payment_method ? ucwords(str_replace('_', ' ', $expense->payment_method)) : '—' }}</td>
+                                    <td class="d-none d-md-table-cell">{{ $expense->reference_no ?: '—' }}</td>
+                                    <td class="text-end">
+                                        <form method="POST" action="{{ url("/bookings/{$booking->uuid}/expenses/{$expense->uuid}") }}"
+                                            onsubmit="return confirm('Delete this expense?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-icon btn-text-danger rounded-pill">
+                                                <i class="mdi mdi-delete-outline"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="text-center text-muted py-4">No expenses recorded yet.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

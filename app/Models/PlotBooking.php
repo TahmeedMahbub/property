@@ -90,6 +90,11 @@ class PlotBooking extends Model
         return $this->morphMany(Document::class, 'documentable');
     }
 
+    public function expenses(): MorphMany
+    {
+        return $this->morphMany(Expense::class, 'expensable');
+    }
+
     // ─── Computed attributes ─────────────────────────────────────
 
     /** Value of the purchased shares = shares_count × share_price. */

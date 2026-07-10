@@ -13,6 +13,7 @@ use App\Http\Controllers\Web\LoanRepaymentController;
 use App\Http\Controllers\Web\MemberController;
 use App\Http\Controllers\Web\PlotBookingController;
 use App\Http\Controllers\Web\PlotBookingDocumentController;
+use App\Http\Controllers\Web\PlotBookingExpenseController;
 use App\Http\Controllers\Web\PlotBookingPaymentController;
 use App\Http\Controllers\Web\PlotController;
 use App\Http\Controllers\Web\PlotDocumentController;
@@ -110,6 +111,9 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     Route::get('/bookings/{booking}/payments/create', [PlotBookingPaymentController::class, 'create'])->name('bookings.payments.create');
     Route::post('/bookings/{booking}/payments', [PlotBookingPaymentController::class, 'store'])->name('bookings.payments.store');
     Route::delete('/bookings/{booking}/payments/{payment}', [PlotBookingPaymentController::class, 'destroy'])->name('bookings.payments.destroy');
+    Route::get('/bookings/{booking}/expenses/create', [PlotBookingExpenseController::class, 'create'])->name('bookings.expenses.create');
+    Route::post('/bookings/{booking}/expenses', [PlotBookingExpenseController::class, 'store'])->name('bookings.expenses.store');
+    Route::delete('/bookings/{booking}/expenses/{expense}', [PlotBookingExpenseController::class, 'destroy'])->name('bookings.expenses.destroy');
     Route::post('/bookings/{booking}/documents', [PlotBookingDocumentController::class, 'store'])->name('bookings.documents.store');
     Route::delete('/bookings/{booking}/documents/{document}', [PlotBookingDocumentController::class, 'destroy'])->name('bookings.documents.destroy');
     Route::resource('bookings', PlotBookingController::class);

@@ -30,7 +30,25 @@ use RuntimeException;
  */
 class PlotBookingService
 {
+    /**
+     * Company income category. Only payments toward the share price (booking
+     * money, installments and full payments) are posted here, since the share
+     * value is the company's actual sale revenue.
+     */
     public const CATEGORY = 'plot_share_sale';
+
+    /**
+     * Non-income category for pass-through charges (registration and other
+     * fees). These are still tracked as cash received but must NOT count toward
+     * company income/profit, so they are ledgered separately from the sale.
+     */
+    public const FEE_CATEGORY = 'plot_share_fee';
+
+    /**
+     * Payment types that represent pass-through fees rather than share-price
+     * income, and are therefore ledgered under {@see self::FEE_CATEGORY}.
+     */
+    public const FEE_PAYMENT_TYPES = ['registration', 'other'];
 
     /**
      * Maps a booking amount field to the payment type recorded when its "Paid"
@@ -43,6 +61,18 @@ class PlotBookingService
         'registration_fee' => 'registration',
         'other_fee' => 'other',
     ];
+
+    /**
+     * Journal category a payment belongs to: share-price income for booking
+     * money / installments / full payments, or the fee category for pass-through
+     * registration and other charges.
+     */
+    private function categoryFor(PlotBookingPayment $payment): string
+    {
+        return in_array($payment->payment_type, self::FEE_PAYMENT_TYPES, true)
+            ? self::FEE_CATEGORY
+            : self::CATEGORY;
+    }
 
     /**
      * Create a booking with its manual installment schedule and certificates.
@@ -142,7 +172,7 @@ class PlotBookingService
                 JournalService::reverseReference(
                     companyId: $booking->company_id,
                     reference: $payment,
-                    category: self::CATEGORY,
+                    category: $this->categoryFor($payment),
                     remarks: 'Reversed booking payment for ' . $booking->booking_no,
                 );
             }
@@ -162,7 +192,7 @@ class PlotBookingService
                 JournalService::reverseReference(
                     companyId: $booking->company_id,
                     reference: $payment,
-                    category: self::CATEGORY,
+                    category: $this->categoryFor($payment),
                     remarks: 'Reversed booking payment for ' . $booking->booking_no,
                 );
             }
@@ -181,7 +211,7 @@ class PlotBookingService
             reference: $payment,
             // Positive target credit ⇒ a credit (cash in) of the payment amount.
             targetCredit: (float) $payment->amount,
-            category: self::CATEGORY,
+            category: $this->categoryFor($payment),
             remarks: ucfirst($payment->payment_type) . ' payment for booking ' . $booking->booking_no,
             userId: $payment->created_by,
         );
@@ -225,7 +255,7 @@ class PlotBookingService
                 JournalService::reverseReference(
                     companyId: $booking->company_id,
                     reference: $payment,
-                    category: self::CATEGORY,
+                    category: $this->categoryFor($payment),
                     remarks: 'Reversed booking payment for ' . $booking->booking_no,
                 );
 

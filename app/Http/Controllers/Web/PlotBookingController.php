@@ -80,6 +80,7 @@ class PlotBookingController extends Controller
                 'creator',
                 'installments.payments',
                 'payments' => fn ($q) => $q->with('installment')->latest('payment_date')->latest('id'),
+                'expenses' => fn ($q) => $q->latest('expense_date')->latest('id'),
                 'documents' => fn ($q) => $q->with('category')->latest(),
             ])
             ->where('uuid', $uuid)
