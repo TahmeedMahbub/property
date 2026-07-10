@@ -154,7 +154,7 @@
     }
 
     #layout-menu .app-brand .app-brand-logo img {
-        box-shadow: 0 4px 12px rgba(24, 34, 59, 0.18);
+        /* box-shadow: 0 4px 12px rgba(24, 34, 59, 0.18); */
     }
 
     /* Menu inner shadow (top fade) tuned for light bg */

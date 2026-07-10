@@ -43,9 +43,16 @@ class PlotBookingPaymentController extends Controller
             'payment_method' => ['nullable', 'string', 'max:100'],
             'reference_no' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'mark_completed' => ['nullable', 'boolean'],
         ]);
 
+        unset($validated['mark_completed']);
+
         $this->bookings->recordPayment($booking, $validated);
+
+        if ($request->boolean('mark_completed')) {
+            $booking->update(['status' => 'completed']);
+        }
 
         return redirect("/bookings/{$booking->uuid}")->with('success', 'Payment recorded successfully.');
     }

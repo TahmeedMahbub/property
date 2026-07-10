@@ -32,8 +32,12 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ url("/bookings/{$booking->uuid}/payments") }}">
+                <form method="POST" action="{{ url("/bookings/{$booking->uuid}/payments") }}"
+                    id="payment-form"
+                    data-due="{{ $booking->total_due }}"
+                    data-customer="{{ $booking->customer?->name ?? 'Customer' }}">
                     @csrf
+                    <input type="hidden" name="mark_completed" id="mark_completed" value="0">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="payment_type" class="form-label">Payment Type <span class="text-danger">*</span></label>
@@ -91,4 +95,119 @@
         </div>
     </div>
 </div>
+
+{{-- Full payment: partial (amount < due) confirmation --}}
+<div class="modal fade" id="fullPaymentPartialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-alert-outline text-warning me-1"></i>Confirm Full Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{-- <p class="mb-2">You selected <strong>Full Payment</strong>, but the amount entered is less than the outstanding due.</p> --}}
+                <p class="mb-0" id="fullPaymentPartialText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="fullPaymentPartialConfirm">Yes, record payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Full payment: completed confirmation (amount >= due) --}}
+<div class="modal fade" id="bookingCompletedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-check-circle-outline text-success me-1"></i>Booking Completed?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0" id="bookingCompletedText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="bookingCompletedNo">No, just record payment</button>
+                <button type="button" class="btn btn-success" id="bookingCompletedYes">Yes, mark as completed</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+(function () {
+    var form = document.getElementById('payment-form');
+    if (!form) { return; }
+
+    var typeEl = document.getElementById('payment_type');
+    var amountEl = document.getElementById('amount');
+    var markCompletedEl = document.getElementById('mark_completed');
+
+    var due = parseFloat(form.getAttribute('data-due')) || 0;
+    var customer = form.getAttribute('data-customer') || 'Customer';
+
+    function money(n) {
+        return (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    var canSubmit = false;
+    var partialModal = null;
+    var completedModal = null;
+
+    if (typeof bootstrap !== 'undefined') {
+        partialModal = new bootstrap.Modal(document.getElementById('fullPaymentPartialModal'));
+        completedModal = new bootstrap.Modal(document.getElementById('bookingCompletedModal'));
+    }
+
+    function submitForm() {
+        canSubmit = true;
+        form.submit();
+    }
+
+    form.addEventListener('submit', function (e) {
+        if (canSubmit) { return; }
+        if (!partialModal || !completedModal) { return; }
+
+        var amount = parseFloat(amountEl.value) || 0;
+
+        if (typeEl.value === 'full') {
+            // Full payment always completes the booking, whatever the amount.
+            markCompletedEl.value = '1';
+            if (amount < due) {
+                e.preventDefault();
+                document.getElementById('fullPaymentPartialText').innerHTML =
+                    customer + ' has <strong>৳' + money(due) + '</strong> due, but paying only <strong>৳' + money(amount) + '</strong>. </br>Are you sure you want to record this as a <strong>Full Payment</strong> and complete the booking?';
+                partialModal.show();
+            }
+            // amount >= due: submit normally with status completed.
+        } else if (amount >= due && due > 0) {
+            e.preventDefault();
+            document.getElementById('bookingCompletedText').innerHTML =
+                'This payment covers the outstanding due of <strong>৳' + money(due) + '</strong> for ' + customer + '. Is this booking completed?';
+            completedModal.show();
+        }
+    });
+
+    document.getElementById('fullPaymentPartialConfirm').addEventListener('click', function () {
+        markCompletedEl.value = '1';
+        partialModal.hide();
+        submitForm();
+    });
+
+    document.getElementById('bookingCompletedYes').addEventListener('click', function () {
+        markCompletedEl.value = '1';
+        completedModal.hide();
+        submitForm();
+    });
+
+    document.getElementById('bookingCompletedNo').addEventListener('click', function () {
+        markCompletedEl.value = '0';
+        completedModal.hide();
+        submitForm();
+    });
+})();
+</script>
+@endpush
 @endsection

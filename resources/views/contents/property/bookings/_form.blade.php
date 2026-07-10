@@ -128,7 +128,6 @@
                 <input class="form-check-input mt-0 me-1 paid-input" type="checkbox" name="paid[booking_money]" value="1" data-target="booking_money" title="Mark as paid" {{ $isPaid('booking_money') ? 'checked' : '' }}> Paid
             </span>
         </div>
-        <div class="form-text">Mandatory to book (0 allowed for edge cases).</div>
     </div>
     <div class="col-md-4 mb-3">
         <label for="registration_fee" class="form-label">Registration Fee</label>
