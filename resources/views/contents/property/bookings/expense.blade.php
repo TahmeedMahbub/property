@@ -34,9 +34,10 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="category" class="form-label">Expense Category <span class="text-danger">*</span></label>
-                            <select class="form-select" id="category" name="category" required>
-                                @foreach (\App\Models\Expense::CATEGORIES as $v => $l)
-                                    <option value="{{ $v }}" {{ old('category') === $v ? 'selected' : '' }}>{{ $l }}</option>
+                            <select class="form-select" id="category" name="category_id" required>
+                                <option value="">— Select —</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->id }}" {{ (string) old('category_id') === (string) $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                         </div>

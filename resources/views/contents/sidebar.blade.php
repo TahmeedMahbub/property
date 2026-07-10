@@ -136,6 +136,14 @@
             </ul>
         </li>
 
+        {{-- Expenses --}}
+        <li class="menu-item {{ request()->is('expenses*') ? 'active' : '' }}">
+            <a href="{{ url('/expenses') }}" class="menu-link">
+                <i class="menu-icon tf-icons mdi mdi-cash-minus"></i>
+                <div>Expenses</div>
+            </a>
+        </li>
+
         {{-- Investors --}}
         {{-- <li class="menu-item {{ request()->is('investors*') ? 'active' : '' }}">
             <a href="{{ url('/investors') }}" class="menu-link">

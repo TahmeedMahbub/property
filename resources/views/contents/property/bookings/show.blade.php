@@ -247,7 +247,7 @@
                             @forelse ($booking->expenses as $expense)
                                 <tr>
                                     <td class="text-nowrap">{{ $expense->expense_date->format('d M Y') }}</td>
-                                    <td><span class="badge bg-label-danger">{{ \App\Models\Expense::CATEGORIES[$expense->category] ?? ucfirst($expense->category) }}</span></td>
+                                    <td><span class="badge bg-label-danger">{{ $expense->category_name }}</span></td>
                                     <td class="d-none d-md-table-cell">{{ $expense->title ?: '—' }}</td>
                                     <td class="text-end fw-medium">৳{{ number_format($expense->amount, 2) }}</td>
                                     <td class="d-none d-md-table-cell">{{ $expense->payment_method ? ucwords(str_replace('_', ' ', $expense->payment_method)) : '—' }}</td>

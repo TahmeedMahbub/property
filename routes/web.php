@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\BuildingController;
 use App\Http\Controllers\Web\CustomerController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DocumentDownloadController;
+use App\Http\Controllers\Web\ExpenseController;
 use App\Http\Controllers\Web\FloorController;
 use App\Http\Controllers\Web\InvestorController;
 use App\Http\Controllers\Web\LoanController;
@@ -125,6 +126,9 @@ Route::middleware(['auth', 'verified', 'web.company'])->group(function () {
     Route::post('/loans/{loan}/repayments', [LoanRepaymentController::class, 'store'])->name('loans.repayments.store');
     Route::delete('/loans/{loan}/repayments/{repayment}', [LoanRepaymentController::class, 'destroy'])->name('loans.repayments.destroy');
     Route::resource('loans', LoanController::class);
+
+    // Expenses
+    Route::resource('expenses', ExpenseController::class)->parameters(['expenses' => 'uuid']);
 
     // Documents (authorized download/preview)
     Route::get('/documents/{document}/download', [DocumentDownloadController::class, 'download'])->name('documents.auth-download');

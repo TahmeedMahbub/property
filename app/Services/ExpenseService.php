@@ -43,6 +43,22 @@ class ExpenseService
     }
 
     /**
+     * Update an expense and re-post its cash-out ledger entry.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function update(Expense $expense, array $data): Expense
+    {
+        return DB::transaction(function () use ($expense, $data) {
+            $expense->update($data);
+
+            $this->syncJournal($expense->fresh());
+
+            return $expense->refresh();
+        });
+    }
+
+    /**
      * Delete an expense and reverse its cash-out ledger entry.
      */
     public function delete(Expense $expense): void

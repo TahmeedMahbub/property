@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\PlotBooking;
 use App\Services\ExpenseService;
 use Illuminate\Http\Request;
@@ -23,7 +24,9 @@ class PlotBookingExpenseController extends Controller
             ->where('uuid', $bookingUuid)
             ->firstOrFail();
 
-        return view('contents.property.bookings.expense', compact('booking'));
+        $categories = ExpenseCategory::forCompany($company->id)->active()->orderBy('name')->get();
+
+        return view('contents.property.bookings.expense', compact('booking', 'categories'));
     }
 
     public function store(Request $request, string $bookingUuid)
@@ -32,7 +35,7 @@ class PlotBookingExpenseController extends Controller
         $booking = PlotBooking::forCompany($company->id)->where('uuid', $bookingUuid)->firstOrFail();
 
         $validated = $request->validate([
-            'category' => ['required', Rule::in(array_keys(Expense::CATEGORIES))],
+            'category_id' => ['required', Rule::exists('p_expense_categories', 'id')->where(fn ($q) => $q->where(fn ($w) => $w->where('company_id', $company->id)->orWhereNull('company_id')))],
             'title' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'expense_date' => ['required', 'date'],
@@ -40,6 +43,9 @@ class PlotBookingExpenseController extends Controller
             'reference_no' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $category = ExpenseCategory::findOrFail($validated['category_id']);
+        $validated['category'] = $category->slug;
 
         $this->expenses->record($company->id, $validated, $booking);
 
