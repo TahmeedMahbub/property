@@ -135,9 +135,7 @@ class ShareholderController extends Controller
      */
     public function investments()
     {
-        $company = app('currentCompany')->loadMissing('metrics');
-
-        $shareholdersCount = Shareholder::where('company_id', $company->id)->count();
+        $company = app('currentCompany');
 
         $transactions = ShareTransaction::forCompany($company->id)
             ->whereIn('type', ['issue', 'buyback'])
@@ -145,7 +143,7 @@ class ShareholderController extends Controller
             ->latest()
             ->paginate(15, ['*'], 'txn');
 
-        return view('contents.property.shareholders.investments', compact('company', 'shareholdersCount', 'transactions'));
+        return view('contents.property.shareholders.investments', compact('transactions'));
     }
 
     /**

@@ -19,6 +19,8 @@ class ExpenseCategorySeeder extends Seeder
             ['name' => 'Mutation Fee', 'description' => 'Land mutation / namjari charges.'],
             ['name' => 'Legal Fee', 'description' => 'Lawyer, deed and documentation charges.'],
             ['name' => 'Commission', 'description' => 'Broker / agent commission.'],
+            ['name' => 'Interest', 'description' => 'Loan interest paid.'],
+            ['name' => 'Penalty', 'description' => 'Loan penalty / late fee paid.'],
             ['name' => 'Salary', 'description' => 'Staff salary and wages.'],
             ['name' => 'Rent', 'description' => 'Office or site rent.'],
             ['name' => 'Marketing', 'description' => 'Advertising and promotion.'],

@@ -19,60 +19,6 @@
 
         <h4 class="fw-bold mb-3">Investments Overview</h4>
 
-        @php
-            $metrics = optional($company->metrics);
-            $sharePrice = (float) $metrics->current_share_price;
-            $totalShares = (float) $metrics->total_shares;
-            $valuation = (float) $metrics->current_valuation;
-        @endphp
-
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-lg-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="badge bg-label-primary rounded p-2 me-2"><i class="mdi mdi-currency-usd"></i></span>
-                            <span class="text-muted small">Share Price</span>
-                        </div>
-                        <h5 class="mb-0">{{ rtrim(rtrim(number_format($sharePrice, 6), '0'), '.') ?: '—' }}</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="badge bg-label-info rounded p-2 me-2"><i class="mdi mdi-chart-pie"></i></span>
-                            <span class="text-muted small">Total Shares</span>
-                        </div>
-                        <h5 class="mb-0">{{ rtrim(rtrim(number_format($totalShares, 6), '0'), '.') }}</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="badge bg-label-success rounded p-2 me-2"><i class="mdi mdi-finance"></i></span>
-                            <span class="text-muted small">Valuation</span>
-                        </div>
-                        <h5 class="mb-0">{{ number_format($valuation, 2) }}</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-1">
-                            <span class="badge bg-label-warning rounded p-2 me-2"><i class="mdi mdi-account-group"></i></span>
-                            <span class="text-muted small">Shareholders</span>
-                        </div>
-                        <h5 class="mb-0">{{ number_format($shareholdersCount) }}</h5>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <h6 class="mb-0">Deposit &amp; Withdraw History</h6>

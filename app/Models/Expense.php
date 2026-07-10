@@ -49,6 +49,7 @@ class Expense extends Model
         Plot::class => ['label' => 'Plot', 'color' => 'warning'],
         Project::class => ['label' => 'Project', 'color' => 'info'],
         PlotBooking::class => ['label' => 'Booking', 'color' => 'success'],
+        LoanRepayment::class => ['label' => 'Loan', 'color' => 'dark'],
     ];
 
     /** Supported payment methods. */
@@ -139,6 +140,7 @@ class Expense extends Model
         return match ($this->expensable_type) {
             Plot::class => $source->plot_name,
             PlotBooking::class => $source->booking_no,
+            LoanRepayment::class => $source->loan?->lender_name,
             default => (string) ($source->name ?? $source->title ?? $source->uuid ?? ''),
         };
     }

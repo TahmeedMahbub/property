@@ -4,6 +4,9 @@ namespace App\Domains\Loan\Services;
 
 use App\Models\Loan;
 use App\Models\LoanRepayment;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Services\ExpenseService;
 use App\Services\JournalService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +24,10 @@ class LoanService
     private const CATEGORY_RECEIVED = 'loan_received';
 
     private const CATEGORY_REPAYMENT = 'loan_repayment';
+
+    public function __construct(
+        private readonly ExpenseService $expenses = new ExpenseService(),
+    ) {}
 
     /**
      * Create a new loan for a company.
@@ -75,7 +82,11 @@ class LoanService
 
             $repayment = LoanRepayment::create($data);
 
+            // Principal reduces the loan balance (financing), while interest and
+            // penalty are true costs — so they are recorded as expenses. Each
+            // posts its own cash-out entry, keeping the ledger total unchanged.
             $this->syncRepaymentJournal($loan, $repayment);
+            $this->syncRepaymentExpenses($loan, $repayment);
             $this->syncStatus($loan->load('repayments'));
 
             return $repayment;
@@ -90,6 +101,9 @@ class LoanService
         $loan = $repayment->loan;
 
         DB::transaction(function () use ($loan, $repayment) {
+            // Remove the interest/penalty expenses this repayment generated.
+            $this->deleteRepaymentExpenses($repayment);
+
             if ($loan) {
                 JournalService::reverseReference(
                     companyId: $loan->company_id,
@@ -132,6 +146,8 @@ class LoanService
         DB::transaction(function () use ($loan) {
             // Unwind every cash movement this loan posted to the ledger.
             foreach ($loan->repayments as $repayment) {
+                $this->deleteRepaymentExpenses($repayment);
+
                 JournalService::reverseReference(
                     companyId: $loan->company_id,
                     reference: $repayment,
@@ -167,21 +183,72 @@ class LoanService
     }
 
     /**
-     * Post the ledger debit for a repayment (principal + interest + penalty out).
+     * Post the ledger debit for a repayment's principal (financing, cash out).
+     *
+     * Interest and penalty are excluded here — they are posted separately as
+     * expenses so they show up in the expense module. The combined cash-out
+     * therefore equals principal + interest + penalty, with no double counting.
      */
     private function syncRepaymentJournal(Loan $loan, LoanRepayment $repayment): void
     {
-        $total = (float) $repayment->principal_paid
-            + (float) $repayment->interest_paid
-            + (float) $repayment->penalty;
-
         JournalService::syncReference(
             companyId: $loan->company_id,
             reference: $repayment,
-            targetCredit: -$total,
+            targetCredit: -(float) $repayment->principal_paid,
             category: self::CATEGORY_REPAYMENT,
-            remarks: 'Loan repayment to ' . $loan->lender_name,
+            remarks: 'Loan principal repayment to ' . $loan->lender_name,
             userId: $repayment->created_by,
         );
+    }
+
+    /**
+     * Record the interest and penalty portions of a repayment as expenses.
+     *
+     * Each expense posts its own cash-out journal entry (via ExpenseService),
+     * linked to the repayment so it can be reversed when the repayment is
+     * deleted. Zero amounts are skipped.
+     */
+    private function syncRepaymentExpenses(Loan $loan, LoanRepayment $repayment): void
+    {
+        $items = [
+            'interest' => (float) $repayment->interest_paid,
+            'penalty' => (float) $repayment->penalty,
+        ];
+
+        foreach ($items as $slug => $amount) {
+            if ($amount <= 0) {
+                continue;
+            }
+
+            $category = ExpenseCategory::forCompany($loan->company_id)
+                ->where('slug', $slug)
+                ->first();
+
+            $this->expenses->record($loan->company_id, [
+                'created_by' => $repayment->created_by,
+                'category_id' => $category?->id,
+                'category' => $slug,
+                'title' => ucfirst($slug) . ' — ' . $loan->lender_name,
+                'amount' => $amount,
+                'expense_date' => $repayment->payment_date,
+                'payment_method' => $repayment->payment_method,
+                'reference_no' => $repayment->reference_no,
+                'notes' => 'Auto-recorded from loan repayment.',
+            ], $repayment);
+        }
+    }
+
+    /**
+     * Remove the expenses (and their journal entries) a repayment generated.
+     */
+    private function deleteRepaymentExpenses(LoanRepayment $repayment): void
+    {
+        $expenses = Expense::where('expensable_type', $repayment->getMorphClass())
+            ->where('expensable_id', $repayment->id)
+            ->get();
+
+        foreach ($expenses as $expense) {
+            $this->expenses->delete($expense);
+        }
     }
 }
